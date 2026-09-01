@@ -1,5 +1,5 @@
 use domain::business::{Business, BusinessSlug, BusinessStatus};
-use domain::membership::{BusinessMembership, MembershipRole, MembershipStatus};
+use domain::membership::{BusinessMembership, MembershipRole};
 use shared::{BusinessId, MembershipId, UserId};
 
 #[test]
@@ -16,6 +16,7 @@ fn test_business_state_machine_transitions() {
         BusinessSlug::parse("my-store").unwrap(),
         "My Store".to_string(),
         None,
+        None,
         UserId::new(),
     );
 
@@ -25,9 +26,11 @@ fn test_business_state_machine_transitions() {
     // Draft -> Published directly is forbidden
     assert!(!business.can_transition_to(BusinessStatus::Published));
 
-    // Draft -> PendingReview requires primary location
-    assert!(business.submit_for_review(false).is_err());
-    assert!(business.submit_for_review(true).is_ok());
+    // Draft -> PendingReview requires both primary location and primary category
+    assert!(business.submit_for_review(false, false).is_err());
+    assert!(business.submit_for_review(true, false).is_err());
+    assert!(business.submit_for_review(false, true).is_err());
+    assert!(business.submit_for_review(true, true).is_ok());
     assert_eq!(business.status, BusinessStatus::PendingReview);
 
     // PendingReview -> Archived is allowed

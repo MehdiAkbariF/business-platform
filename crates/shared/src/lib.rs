@@ -51,6 +51,75 @@ impl fmt::Display for BusinessId {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(transparent)]
+pub struct MediaId(pub Uuid);
+
+impl MediaId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for MediaId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for MediaId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct AttributeId(pub Uuid);
+
+impl AttributeId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for AttributeId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for AttributeId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct SocialLinkId(pub Uuid);
+
+impl SocialLinkId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for SocialLinkId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for SocialLinkId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
 pub struct CategoryId(pub Uuid);
 
 impl CategoryId {

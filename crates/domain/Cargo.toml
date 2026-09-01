@@ -10,3 +10,4 @@ serde.workspace = true
 chrono.workspace = true
 utoipa.workspace = true
 uuid.workspace = true
+url.workspace = true

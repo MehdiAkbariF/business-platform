@@ -3,6 +3,7 @@ pub mod contact;
 pub mod events;
 pub mod location;
 pub mod membership;
+pub mod profile;
 pub mod session;
 pub mod taxonomy;
 pub mod user;

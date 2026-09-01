@@ -11,6 +11,7 @@ use crate::ports::repositories::{AuditRepository, BusinessRepository, Membership
 pub struct CreateBusinessCommand {
     pub name: String,
     pub slug: String,
+    pub short_description: Option<String>,
     pub description: Option<String>,
 }
 
@@ -19,7 +20,9 @@ pub struct BusinessDto {
     pub id: BusinessId,
     pub slug: String,
     pub name: String,
+    pub short_description: Option<String>,
     pub description: Option<String>,
+    pub timezone: String,
     pub status: String,
     pub created_by: UserId,
 }
@@ -28,6 +31,7 @@ pub struct BusinessDto {
 pub struct PublicBusinessProfileDto {
     pub slug: String,
     pub name: String,
+    pub short_description: Option<String>,
     pub description: Option<String>,
     pub primary_location: Option<LocationDto>,
     pub contact: Option<ContactDto>,
@@ -69,7 +73,14 @@ pub async fn create_business(
     }
 
     let business_id = BusinessId::new();
-    let business = Business::new(business_id, slug, name.to_string(), cmd.description, user_id);
+    let business = Business::new(
+        business_id,
+        slug,
+        name.to_string(),
+        cmd.short_description,
+        cmd.description,
+        user_id,
+    );
     let owner_membership = BusinessMembership::new(MembershipId::new(), business_id, user_id, MembershipRole::Owner);
 
     business_repo.create_with_owner(&business, &owner_membership).await?;
@@ -86,7 +97,9 @@ pub async fn create_business(
         id: business.id,
         slug: business.slug.as_str().to_string(),
         name: business.name,
+        short_description: business.short_description,
         description: business.description,
+        timezone: business.timezone,
         status: business.status.to_string(),
         created_by: business.created_by,
     })
@@ -99,7 +112,9 @@ pub async fn update_business_profile(
     business_id: BusinessId,
     user_id: UserId,
     name: String,
+    short_description: Option<String>,
     description: Option<String>,
+    timezone: Option<String>,
     metadata: ClientMetadata,
 ) -> Result<(), AppError> {
     let membership = membership_repo
@@ -116,7 +131,15 @@ pub async fn update_business_profile(
         return Err(AppError::Validation("Business name cannot be empty".to_string()));
     }
 
-    business_repo.update_profile(business_id, trimmed_name, description.as_deref()).await?;
+    let tz = timezone.unwrap_or_else(|| "Asia/Tehran".to_string());
+
+    business_repo.update_profile(
+        business_id,
+        trimmed_name,
+        short_description.as_deref(),
+        description.as_deref(),
+        &tz,
+    ).await?;
 
     let _ = audit_repo.record(
         Some(user_id),
@@ -239,6 +262,7 @@ pub async fn get_public_profile(
     Ok(PublicBusinessProfileDto {
         slug: business.slug.as_str().to_string(),
         name: business.name,
+        short_description: business.short_description,
         description: business.description,
         primary_location,
         contact,
@@ -265,7 +289,9 @@ pub async fn get_management_profile(
         id: business.id,
         slug: business.slug.as_str().to_string(),
         name: business.name,
+        short_description: business.short_description,
         description: business.description,
+        timezone: business.timezone,
         status: business.status.to_string(),
         created_by: business.created_by,
     })

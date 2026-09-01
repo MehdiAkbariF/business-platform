@@ -4,7 +4,7 @@ use utoipa::{
 };
 
 use crate::errors;
-use crate::routes::{auth, business, health, taxonomy, user};
+use crate::routes::{auth, business, health, profile, taxonomy, user};
 
 struct SecurityAddon;
 
@@ -57,6 +57,11 @@ impl Modify for SecurityAddon {
         taxonomy::get_business_services,
         taxonomy::add_business_service_endpoint,
         taxonomy::remove_business_service_endpoint,
+        profile::get_presentation,
+        profile::set_business_hours,
+        profile::set_business_attributes,
+        profile::set_business_social_links,
+        profile::delete_media_item,
     ),
     components(
         schemas(
@@ -84,8 +89,19 @@ impl Modify for SecurityAddon {
             application::use_cases::taxonomy::BusinessServiceDto,
             application::use_cases::taxonomy::AssignCategoryCommand,
             application::use_cases::taxonomy::AssignServiceCommand,
+            application::use_cases::profile::PublicPresentationDto,
+            application::use_cases::profile::MediaDto,
+            application::use_cases::profile::AttributeItemDto,
+            application::use_cases::profile::SocialLinkDto,
+            application::use_cases::profile::SaveAttributesCommand,
+            application::use_cases::profile::AttributePayload,
+            application::use_cases::profile::SaveSocialLinksCommand,
+            application::use_cases::profile::SocialLinkPayload,
             business::UpdateProfileRequest,
             domain::membership::MembershipRole,
+            domain::profile::BusinessHoursInterval,
+            domain::profile::MediaType,
+            domain::profile::SocialPlatform,
         )
     ),
     modifiers(&SecurityAddon),
@@ -95,11 +111,12 @@ impl Modify for SecurityAddon {
         (name = "User", description = "User profile operations"),
         (name = "Business", description = "Business aggregate & membership operations"),
         (name = "Taxonomy", description = "Category & Service taxonomy management"),
+        (name = "Profile", description = "Structured profile, media, hours, and attributes"),
     ),
     info(
         title = "Business Discovery Platform API",
-        version = "0.3.0",
-        description = "Production-grade Modular Monolith API with PostGIS, Membership Ownership & Taxonomy Classification"
+        version = "0.4.0",
+        description = "Production-grade Modular Monolith API with Structured Profiles, Media & Taxonomy"
     )
 )]
 pub struct ApiDoc;

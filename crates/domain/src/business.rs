@@ -55,7 +55,9 @@ pub struct Business {
     pub id: BusinessId,
     pub slug: BusinessSlug,
     pub name: String,
+    pub short_description: Option<String>,
     pub description: Option<String>,
+    pub timezone: String,
     pub status: BusinessStatus,
     pub created_by: UserId,
     pub created_at: DateTime<Utc>,
@@ -64,13 +66,15 @@ pub struct Business {
 }
 
 impl Business {
-    pub fn new(id: BusinessId, slug: BusinessSlug, name: String, description: Option<String>, created_by: UserId) -> Self {
+    pub fn new(id: BusinessId, slug: BusinessSlug, name: String, short_description: Option<String>, description: Option<String>, created_by: UserId) -> Self {
         let now = Utc::now();
         Self {
             id,
             slug,
             name,
+            short_description,
             description,
+            timezone: "Asia/Tehran".to_string(),
             status: BusinessStatus::Draft,
             created_by,
             created_at: now,

@@ -25,7 +25,9 @@ struct BusinessRow {
     id: Uuid,
     slug: String,
     name: String,
+    short_description: Option<String>,
     description: Option<String>,
+    timezone: String,
     status: String,
     created_by: Uuid,
     created_at: DateTime<Utc>,
@@ -50,7 +52,9 @@ impl TryFrom<BusinessRow> for Business {
             id: BusinessId::from_uuid(row.id),
             slug,
             name: row.name,
+            short_description: row.short_description,
             description: row.description,
+            timezone: row.timezone,
             status,
             created_by: UserId::from_uuid(row.created_by),
             created_at: row.created_at,
@@ -124,14 +128,16 @@ impl BusinessRepository for PostgresBusinessRepository {
     async fn create_with_owner(&self, business: &Business, owner_membership: &BusinessMembership) -> Result<(), AppError> {
         let mut tx = self.pool.begin().await.map_err(|e| AppError::internal(e))?;
 
-        // 1. Insert Business
         sqlx::query(
-            "INSERT INTO businesses (id, slug, name, description, status, created_by, created_at, updated_at, published_at) VALUES ($1, $2, $3, $4, $5::business_status, $6, $7, $8, $9)"
+            "INSERT INTO businesses (id, slug, name, short_description, description, timezone, status, created_by, created_at, updated_at, published_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7::business_status, $8, $9, $10, $11)"
         )
         .bind(business.id.0)
         .bind(business.slug.as_str())
         .bind(&business.name)
+        .bind(&business.short_description)
         .bind(&business.description)
+        .bind(&business.timezone)
         .bind(business.status.to_string())
         .bind(business.created_by.0)
         .bind(business.created_at)
@@ -148,7 +154,6 @@ impl BusinessRepository for PostgresBusinessRepository {
             AppError::internal(e)
         })?;
 
-        // 2. Insert Owner Membership
         sqlx::query(
             "INSERT INTO business_memberships (id, business_id, user_id, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4::membership_role, $5::membership_status, $6, $7)"
         )
@@ -169,7 +174,7 @@ impl BusinessRepository for PostgresBusinessRepository {
 
     async fn find_by_id(&self, id: BusinessId) -> Result<Option<Business>, AppError> {
         let row = sqlx::query_as::<_, BusinessRow>(
-            "SELECT id, slug, name, description, status::text, created_by, created_at, updated_at, published_at FROM businesses WHERE id = $1"
+            "SELECT id, slug, name, short_description, description, timezone, status::text, created_by, created_at, updated_at, published_at FROM businesses WHERE id = $1"
         )
         .bind(id.0)
         .fetch_optional(&self.pool)
@@ -181,7 +186,7 @@ impl BusinessRepository for PostgresBusinessRepository {
 
     async fn find_by_slug(&self, slug: &str) -> Result<Option<Business>, AppError> {
         let row = sqlx::query_as::<_, BusinessRow>(
-            "SELECT id, slug, name, description, status::text, created_by, created_at, updated_at, published_at FROM businesses WHERE LOWER(slug) = LOWER($1)"
+            "SELECT id, slug, name, short_description, description, timezone, status::text, created_by, created_at, updated_at, published_at FROM businesses WHERE LOWER(slug) = LOWER($1)"
         )
         .bind(slug)
         .fetch_optional(&self.pool)
@@ -191,10 +196,12 @@ impl BusinessRepository for PostgresBusinessRepository {
         row.map(Business::try_from).transpose()
     }
 
-    async fn update_profile(&self, id: BusinessId, name: &str, description: Option<&str>) -> Result<(), AppError> {
-        sqlx::query("UPDATE businesses SET name = $1, description = $2, updated_at = NOW() WHERE id = $3")
+    async fn update_profile(&self, id: BusinessId, name: &str, short_desc: Option<&str>, description: Option<&str>, timezone: &str) -> Result<(), AppError> {
+        sqlx::query("UPDATE businesses SET name = $1, short_description = $2, description = $3, timezone = $4, updated_at = NOW() WHERE id = $5")
             .bind(name)
+            .bind(short_desc)
             .bind(description)
+            .bind(timezone)
             .bind(id.0)
             .execute(&self.pool)
             .await
@@ -225,7 +232,6 @@ impl BusinessRepository for PostgresBusinessRepository {
     }
 
     async fn add_location(&self, l: &BusinessLocation) -> Result<(), AppError> {
-        // Use PostGIS ST_SetSRID and ST_MakePoint (lon, lat)
         sqlx::query(
             "INSERT INTO business_locations (id, business_id, label, geom, country, province, city, district, street, postal_code, formatted_address, accuracy, is_primary, created_at, updated_at) 
              VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326), $6, $7, $8, $9, $10, $11, $12, $13::location_accuracy, $14, $15, $16)"

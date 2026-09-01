@@ -3,7 +3,6 @@ use axum::{
     http::{HeaderMap, StatusCode},
     Json,
 };
-use utoipa::ToSchema;
 use uuid::Uuid;
 
 use application::use_cases::taxonomy::{

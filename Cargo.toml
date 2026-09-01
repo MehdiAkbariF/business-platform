@@ -23,11 +23,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 thiserror = "2.0"
 anyhow = "1.0"
 async-trait = "0.1"
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "macros", "uuid", "chrono"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "macros", "uuid", "chrono", "time"] }
 redis = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
 aws-sdk-s3 = "1.71"
 aws-config = "1.5"
-axum = { version = "0.8", features = ["macros"] }
+axum = { version = "0.8", features = ["macros", "multipart"] }
 tower = { version = "0.5", features = ["util", "timeout"] }
 tower-http = { version = "0.6", features = ["trace", "cors", "request-id", "util", "timeout"] }
 utoipa = { version = "5.3", features = ["axum_extras", "chrono", "uuid"] }
@@ -40,3 +40,5 @@ argon2 = { version = "0.5", features = ["std"] }
 jsonwebtoken = "9.3"
 sha2 = "0.10"
 rand = "0.8"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+url = { version = "2.5", features = ["serde"] }

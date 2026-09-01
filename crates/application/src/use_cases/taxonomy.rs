@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use domain::taxonomy::{Category, Service, TaxonomyStatus};
+use domain::taxonomy::TaxonomyStatus;
 use shared::{BusinessId, CategoryId, ClientMetadata, ServiceId, UserId};
 use utoipa::ToSchema;
 use serde::{Deserialize, Serialize};
@@ -255,7 +255,6 @@ pub async fn assign_business_service(
         return Err(AppError::Validation("Cannot assign an inactive service".to_string()));
     }
 
-    // Taxonomy compatibility check
     let business_cats = tax_repo.get_business_categories(business_id).await?;
     let category_ids: Vec<CategoryId> = business_cats.into_iter().map(|c| c.category_id).collect();
 

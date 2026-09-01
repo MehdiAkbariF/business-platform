@@ -1,6 +1,9 @@
 use std::sync::Arc;
 use application::ports::{
-    repositories::{AuditRepository, BusinessRepository, MembershipRepository, SessionRepository, TaxonomyRepository, UserRepository},
+    repositories::{
+        AuditRepository, BusinessRepository, MembershipRepository, ProfileRepository, SessionRepository,
+        TaxonomyRepository, UserRepository,
+    },
     security::{PasswordHasherPort, RateLimiterPort, TokenServicePort},
     storage::ObjectStoragePort,
 };
@@ -11,6 +14,7 @@ use infrastructure::{
             postgres_audit_repo::PostgresAuditRepository,
             postgres_business_repo::PostgresBusinessRepository,
             postgres_membership_repo::PostgresMembershipRepository,
+            postgres_profile_repo::PostgresProfileRepository,
             postgres_session_repo::PostgresSessionRepository,
             postgres_taxonomy_repo::PostgresTaxonomyRepository,
             postgres_user_repo::PostgresUserRepository,
@@ -35,6 +39,7 @@ pub struct AppState {
     pub business_repo: Arc<dyn BusinessRepository>,
     pub membership_repo: Arc<dyn MembershipRepository>,
     pub taxonomy_repo: Arc<dyn TaxonomyRepository>,
+    pub profile_repo: Arc<dyn ProfileRepository>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -54,6 +59,7 @@ impl AppState {
         let business_repo = Arc::new(PostgresBusinessRepository::new(db.pool().clone()));
         let membership_repo = Arc::new(PostgresMembershipRepository::new(db.pool().clone()));
         let taxonomy_repo = Arc::new(PostgresTaxonomyRepository::new(db.pool().clone()));
+        let profile_repo = Arc::new(PostgresProfileRepository::new(db.pool().clone()));
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
@@ -72,6 +78,7 @@ impl AppState {
             business_repo,
             membership_repo,
             taxonomy_repo,
+            profile_repo,
             password_hasher,
             token_service,
             rate_limiter,

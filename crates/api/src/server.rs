@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::{auth, business, health, taxonomy, user},
+    routes::{auth, business, health, profile, taxonomy, user},
     state::AppState,
 };
 
@@ -86,7 +86,12 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/{id}/services/{service_id}",
             delete(taxonomy::remove_business_service_endpoint),
-        );
+        )
+        .route("/{slug}/presentation", get(profile::get_presentation))
+        .route("/{id}/hours", put(profile::set_business_hours))
+        .route("/{id}/attributes", put(profile::set_business_attributes))
+        .route("/{id}/social-links", put(profile::set_business_social_links))
+        .route("/{id}/media/{media_id}", delete(profile::delete_media_item));
 
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))

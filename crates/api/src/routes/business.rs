@@ -22,7 +22,9 @@ use crate::state::AppState;
 #[derive(Deserialize, ToSchema)]
 pub struct UpdateProfileRequest {
     pub name: String,
+    pub short_description: Option<String>,
     pub description: Option<String>,
+    pub timezone: Option<String>,
 }
 
 fn extract_client_metadata(headers: &HeaderMap) -> ClientMetadata {
@@ -138,7 +140,9 @@ pub async fn update_profile(
         business_id,
         principal.user_id,
         payload.name,
+        payload.short_description,
         payload.description,
+        payload.timezone,
         metadata,
     ).await?;
 
