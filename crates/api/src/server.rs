@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::{auth, business, health, moderation, profile, search, taxonomy, user},
+    routes::{auth, business, health, moderation, profile, recommendation, search, taxonomy, user},
     state::AppState,
 };
 
@@ -49,6 +49,9 @@ pub fn build_router(state: AppState) -> Router {
     let search_routes = Router::new()
         .route("/", get(search::search_businesses))
         .route("/suggestions", get(search::autocomplete_suggestions));
+
+    let rec_routes = Router::new()
+        .route("/", get(recommendation::get_recommendations));
 
     let admin_routes = Router::new()
         .route("/moderation/cases", get(moderation::get_cases))
@@ -107,7 +110,8 @@ pub fn build_router(state: AppState) -> Router {
         .route("/{id}/social-links", put(profile::set_business_social_links))
         .route("/{id}/media/{media_id}", delete(profile::delete_media_item))
         .route("/{id}/claim", post(moderation::claim_business_endpoint))
-        .route("/{id}/reports", post(moderation::report_business_endpoint));
+        .route("/{id}/reports", post(moderation::report_business_endpoint))
+        .route("/{id}/similar", get(recommendation::get_similar_businesses));
 
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))
@@ -115,6 +119,7 @@ pub fn build_router(state: AppState) -> Router {
         .nest("/api/v1/auth", auth_routes)
         .nest("/api/v1/businesses", business_routes)
         .nest("/api/v1/search", search_routes)
+        .nest("/api/v1/recommendations", rec_routes)
         .nest("/api/v1/admin", admin_routes)
         .nest("/api/v1", taxonomy_routes)
         .nest("/api/v1", user_routes)

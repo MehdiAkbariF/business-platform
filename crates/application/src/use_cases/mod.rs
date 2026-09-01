@@ -5,6 +5,7 @@ pub mod logout;
 pub mod members;
 pub mod moderation;
 pub mod profile;
+pub mod recommendation;
 pub mod refresh;
 pub mod register;
 pub mod search;

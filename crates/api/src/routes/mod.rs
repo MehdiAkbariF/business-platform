@@ -3,6 +3,7 @@ pub mod business;
 pub mod health;
 pub mod moderation;
 pub mod profile;
+pub mod recommendation;
 pub mod search;
 pub mod taxonomy;
 pub mod user;

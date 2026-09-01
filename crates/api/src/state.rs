@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use application::ports::{
     ranking::RankingEnginePort,
+    recommendation::{RecommendationEnginePort, RecommendationRepository},
     repositories::{
         AuditRepository, BusinessRepository, MembershipRepository, ModerationRepository, ProfileRepository,
         SessionRepository, TaxonomyRepository, UserRepository,
@@ -18,6 +19,7 @@ use infrastructure::{
             postgres_membership_repo::PostgresMembershipRepository,
             postgres_moderation_repo::PostgresModerationRepository,
             postgres_profile_repo::PostgresProfileRepository,
+            postgres_recommendation_repo::PostgresRecommendationRepository,
             postgres_session_repo::PostgresSessionRepository,
             postgres_taxonomy_repo::PostgresTaxonomyRepository,
             postgres_user_repo::PostgresUserRepository,
@@ -26,6 +28,7 @@ use infrastructure::{
     },
     ranking::deterministic_engine::DeterministicRankingEngine,
     rate_limiter::redis_limiter::RedisRateLimiter,
+    recommendation::modular_engine::ModularRecommendationEngine,
     redis::RedisClient,
     search::postgres_search::PostgresBusinessSearch,
     security::{argon2_hasher::Argon2PasswordHasher, jwt_token_service::JwtTokenService},
@@ -46,8 +49,10 @@ pub struct AppState {
     pub taxonomy_repo: Arc<dyn TaxonomyRepository>,
     pub profile_repo: Arc<dyn ProfileRepository>,
     pub moderation_repo: Arc<dyn ModerationRepository>,
+    pub rec_repo: Arc<dyn RecommendationRepository>,
     pub search_port: Arc<dyn BusinessSearchPort>,
     pub ranking_engine: Arc<dyn RankingEnginePort>,
+    pub rec_engine: Arc<dyn RecommendationEnginePort>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -69,12 +74,14 @@ impl AppState {
         let taxonomy_repo = Arc::new(PostgresTaxonomyRepository::new(db.pool().clone()));
         let profile_repo = Arc::new(PostgresProfileRepository::new(db.pool().clone()));
         let moderation_repo = Arc::new(PostgresModerationRepository::new(db.pool().clone()));
+        let rec_repo = Arc::new(PostgresRecommendationRepository::new(db.pool().clone()));
         let search_port = Arc::new(PostgresBusinessSearch::new(
             db.pool().clone(),
             config.storage_endpoint.clone(),
             config.storage_bucket.clone(),
         ));
         let ranking_engine = Arc::new(DeterministicRankingEngine::new(config.max_search_radius_km));
+        let rec_engine = Arc::new(ModularRecommendationEngine::new(rec_repo.clone()));
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
@@ -95,8 +102,10 @@ impl AppState {
             taxonomy_repo,
             profile_repo,
             moderation_repo,
+            rec_repo,
             search_port,
             ranking_engine,
+            rec_engine,
             password_hasher,
             token_service,
             rate_limiter,

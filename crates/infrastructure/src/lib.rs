@@ -2,6 +2,7 @@ pub mod config;
 pub mod database;
 pub mod ranking;
 pub mod rate_limiter;
+pub mod recommendation;
 pub mod redis;
 pub mod search;
 pub mod security;
