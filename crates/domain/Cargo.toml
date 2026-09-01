@@ -1,0 +1,9 @@
+[package]
+name = "domain"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+shared = { path = "../shared" }
+thiserror.workspace = true
+serde.workspace = true

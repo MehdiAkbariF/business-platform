@@ -1,0 +1,11 @@
+[package]
+name = "application"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+domain = { path = "../domain" }
+shared = { path = "../shared" }
+thiserror.workspace = true
+async-trait.workspace = true
+bytes = "1.10"

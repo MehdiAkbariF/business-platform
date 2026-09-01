@@ -1,0 +1,23 @@
+[package]
+name = "infrastructure"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+application = { path = "../application" }
+domain = { path = "../domain" }
+shared = { path = "../shared" }
+
+sqlx.workspace = true
+redis.workspace = true
+aws-sdk-s3.workspace = true
+aws-config.workspace = true
+tokio.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+tracing.workspace = true
+dotenvy.workspace = true
+config.workspace = true
+bytes = "1.10"
