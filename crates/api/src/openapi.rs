@@ -36,6 +36,7 @@ impl Modify for SecurityAddon {
         auth::logout,
         auth::logout_all,
         user::get_me,
+        user::get_my_businesses,
         business::create,
         business::get_public,
         business::get_management,
@@ -109,6 +110,7 @@ impl Modify for SecurityAddon {
             auth::RefreshRequest,
             auth::AuthSuccessResponse,
             application::use_cases::get_me::UserProfileDto,
+            application::ports::repositories::UserBusinessSummaryDto,
             application::use_cases::business::CreateBusinessCommand,
             application::use_cases::business::BusinessDto,
             application::use_cases::business::PublicBusinessProfileDto,
@@ -151,10 +153,6 @@ impl Modify for SecurityAddon {
             application::ports::admin::AuditLogEntryDto,
             application::use_cases::monetization::SubscribeCommand,
             application::use_cases::monetization::CreateCampaignCommand,
-            application::use_cases::admin::SubmitAppealCommand,
-            application::use_cases::admin::ResolveAppealCommand,
-            application::use_cases::admin::UpdateFeatureFlagCommand,
-            application::use_cases::admin::UpdateConfigCommand,
             domain::admin::AdminDashboardMetrics,
             domain::admin::AppealStatus,
             domain::admin::FeatureFlagItem,
@@ -194,8 +192,8 @@ impl Modify for SecurityAddon {
     ),
     info(
         title = "Business Discovery Platform API",
-        version = "1.0.0",
-        description = "Complete Modular Monolith Backend with Admin Operations, Granular RBAC, Audit Trail & Security Controls"
+        version = "1.1.0",
+        description = "Complete Modular Monolith Backend with Dynamic User Business Listings"
     )
 )]
 pub struct ApiDoc;

@@ -4,7 +4,7 @@ use domain::membership::{BusinessMembership, MembershipRole, MembershipStatus};
 use shared::{BusinessId, MembershipId, UserId};
 use sqlx::PgPool;
 use application::errors::AppError;
-use application::ports::repositories::MembershipRepository;
+use application::ports::repositories::{MembershipRepository, UserBusinessSummaryDto};
 use uuid::Uuid;
 
 pub struct PostgresMembershipRepository {
@@ -77,6 +77,37 @@ impl MembershipRepository for PostgresMembershipRepository {
         .map_err(|e| AppError::internal(e))?;
 
         Ok(rows.into_iter().map(BusinessMembership::from).collect())
+    }
+
+    async fn list_user_businesses(&self, user_id: UserId) -> Result<Vec<UserBusinessSummaryDto>, AppError> {
+        #[derive(sqlx::FromRow)]
+        struct Row {
+            id: Uuid,
+            slug: String,
+            name: String,
+            status: String,
+            role: String,
+        }
+
+        let rows = sqlx::query_as::<_, Row>(
+            "SELECT b.id, b.slug, b.name, b.status::text, bm.role::text 
+             FROM business_memberships bm
+             INNER JOIN businesses b ON bm.business_id = b.id
+             WHERE bm.user_id = $1 AND bm.status = 'ACTIVE'
+             ORDER BY bm.created_at DESC"
+        )
+        .bind(user_id.0)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| AppError::internal(e))?;
+
+        Ok(rows.into_iter().map(|r| UserBusinessSummaryDto {
+            id: BusinessId::from_uuid(r.id),
+            slug: r.slug,
+            name: r.name,
+            status: r.status,
+            role: r.role,
+        }).collect())
     }
 
     async fn add_member(&self, m: &BusinessMembership) -> Result<(), AppError> {

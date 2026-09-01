@@ -13,7 +13,18 @@ use shared::{
     AttributeId, BusinessId, CaseId, CategoryId, MediaId, ReportId, ServiceId, SessionId, SocialLinkId,
     TokenFamilyId, UserId,
 };
+use utoipa::ToSchema;
+use serde::Serialize;
 use crate::errors::AppError;
+
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct UserBusinessSummaryDto {
+    pub id: BusinessId,
+    pub slug: String,
+    pub name: String,
+    pub status: String,
+    pub role: String,
+}
 
 #[async_trait]
 pub trait UserRepository: Send + Sync {
@@ -55,6 +66,7 @@ pub trait BusinessRepository: Send + Sync {
 pub trait MembershipRepository: Send + Sync {
     async fn find_membership(&self, business_id: BusinessId, user_id: UserId) -> Result<Option<BusinessMembership>, AppError>;
     async fn list_members(&self, business_id: BusinessId) -> Result<Vec<BusinessMembership>, AppError>;
+    async fn list_user_businesses(&self, user_id: UserId) -> Result<Vec<UserBusinessSummaryDto>, AppError>;
     async fn add_member(&self, membership: &BusinessMembership) -> Result<(), AppError>;
     async fn remove_member(&self, business_id: BusinessId, user_id: UserId) -> Result<(), AppError>;
     async fn change_role(&self, business_id: BusinessId, user_id: UserId, role: MembershipRole) -> Result<(), AppError>;

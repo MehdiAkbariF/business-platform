@@ -38,7 +38,8 @@ pub fn build_router(state: AppState) -> Router {
         .route("/logout-all", post(auth::logout_all));
 
     let user_routes = Router::new()
-        .route("/me", get(user::get_me));
+        .route("/me", get(user::get_me))
+        .route("/me/businesses", get(user::get_my_businesses));
 
     let taxonomy_routes = Router::new()
         .route("/categories", get(taxonomy::get_categories))
