@@ -4,6 +4,7 @@ pub mod postgres_business_repo;
 pub mod postgres_membership_repo;
 pub mod postgres_moderation_repo;
 pub mod postgres_monetization_repo;
+pub mod postgres_outbox_repo;
 pub mod postgres_profile_repo;
 pub mod postgres_recommendation_repo;
 pub mod postgres_security_repo;

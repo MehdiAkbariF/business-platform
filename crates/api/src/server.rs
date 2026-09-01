@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::{request_id::trace_request_id, security_headers::apply_security_headers},
     openapi::ApiDoc,
-    routes::{admin, auth, business, health, moderation, monetization, profile, recommendation, search, seo, taxonomy, user},
+    routes::{admin, auth, business, health, metrics, moderation, monetization, profile, recommendation, search, seo, taxonomy, user},
     state::AppState,
 };
 
@@ -140,6 +140,7 @@ pub fn build_router(state: AppState) -> Router {
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))
         .route("/health/ready", get(health::readiness))
+        .route("/metrics", get(metrics::get_prometheus_metrics))
         .route("/robots.txt", get(seo::get_robots_txt))
         .route("/sitemap.xml", get(seo::get_sitemap_index))
         .route("/sitemaps/businesses.xml", get(seo::get_businesses_sitemap))
@@ -156,7 +157,7 @@ pub fn build_router(state: AppState) -> Router {
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
                 .layer(middleware::from_fn(trace_request_id))
-                .layer(middleware::from_fn(apply_security_headers)) // Security Hardening Middleware
+                .layer(middleware::from_fn(apply_security_headers))
                 .layer(TimeoutLayer::with_status_code(
                     StatusCode::REQUEST_TIMEOUT,
                     Duration::from_secs(30),

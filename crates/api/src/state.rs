@@ -2,6 +2,7 @@ use std::sync::Arc;
 use application::ports::{
     admin::AdminOperationsRepository,
     monetization::{MonetizationRepository, PaymentProviderPort},
+    outbox::OutboxRepository,
     ranking::RankingEnginePort,
     recommendation::{RecommendationEnginePort, RecommendationRepository},
     repositories::{
@@ -24,6 +25,7 @@ use infrastructure::{
             postgres_membership_repo::PostgresMembershipRepository,
             postgres_moderation_repo::PostgresModerationRepository,
             postgres_monetization_repo::PostgresMonetizationRepository,
+            postgres_outbox_repo::PostgresOutboxRepository,
             postgres_profile_repo::PostgresProfileRepository,
             postgres_recommendation_repo::PostgresRecommendationRepository,
             postgres_security_repo::PostgresSecurityRepository,
@@ -34,6 +36,7 @@ use infrastructure::{
         },
         PostgresDatabase,
     },
+    jobs::{scheduler::PeriodicScheduler, worker::BackgroundJobWorker},
     monetization::mock_provider::MockPaymentProvider,
     ranking::deterministic_engine::DeterministicRankingEngine,
     rate_limiter::redis_limiter::RedisRateLimiter,
@@ -67,6 +70,7 @@ pub struct AppState {
     pub seo_repo: Arc<dyn SeoRepository>,
     pub admin_repo: Arc<dyn AdminOperationsRepository>,
     pub sec_repo: Arc<dyn SecurityOperationsRepository>,
+    pub outbox_repo: Arc<dyn OutboxRepository>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -101,12 +105,20 @@ impl AppState {
         let seo_repo = Arc::new(PostgresSeoRepository::new(db.pool().clone()));
         let admin_repo = Arc::new(PostgresAdminOperationsRepository::new(db.pool().clone()));
         let sec_repo = Arc::new(PostgresSecurityRepository::new(db.pool().clone()));
+        let outbox_repo = Arc::new(PostgresOutboxRepository::new(db.pool().clone()));
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
             config.access_token_ttl_seconds,
         ));
         let rate_limiter = Arc::new(RedisRateLimiter::new(redis.clone()));
+
+        // Start background asynchronous job workers & periodic schedulers
+        let worker = Arc::new(BackgroundJobWorker::new(db.pool().clone()));
+        worker.start();
+
+        let scheduler = Arc::new(PeriodicScheduler::new(db.pool().clone()));
+        scheduler.start();
 
         Ok(Self {
             config,
@@ -130,6 +142,7 @@ impl AppState {
             seo_repo,
             admin_repo,
             sec_repo,
+            outbox_repo,
             password_hasher,
             token_service,
             rate_limiter,

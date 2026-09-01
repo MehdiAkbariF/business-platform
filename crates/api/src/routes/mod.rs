@@ -2,6 +2,7 @@ pub mod admin;
 pub mod auth;
 pub mod business;
 pub mod health;
+pub mod metrics;
 pub mod moderation;
 pub mod monetization;
 pub mod profile;
