@@ -51,6 +51,98 @@ impl fmt::Display for BusinessId {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(transparent)]
+pub struct CaseId(pub Uuid);
+
+impl CaseId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for CaseId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for CaseId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct DecisionId(pub Uuid);
+
+impl DecisionId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for DecisionId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for DecisionId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct ClaimId(pub Uuid);
+
+impl ClaimId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for ClaimId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for ClaimId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct ReportId(pub Uuid);
+
+impl ReportId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for ReportId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for ReportId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
 pub struct MediaId(pub Uuid);
 
 impl MediaId {

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use application::ports::{
     repositories::{
-        AuditRepository, BusinessRepository, MembershipRepository, ProfileRepository, SessionRepository,
-        TaxonomyRepository, UserRepository,
+        AuditRepository, BusinessRepository, MembershipRepository, ModerationRepository, ProfileRepository,
+        SessionRepository, TaxonomyRepository, UserRepository,
     },
     security::{PasswordHasherPort, RateLimiterPort, TokenServicePort},
     storage::ObjectStoragePort,
@@ -14,6 +14,7 @@ use infrastructure::{
             postgres_audit_repo::PostgresAuditRepository,
             postgres_business_repo::PostgresBusinessRepository,
             postgres_membership_repo::PostgresMembershipRepository,
+            postgres_moderation_repo::PostgresModerationRepository,
             postgres_profile_repo::PostgresProfileRepository,
             postgres_session_repo::PostgresSessionRepository,
             postgres_taxonomy_repo::PostgresTaxonomyRepository,
@@ -40,6 +41,7 @@ pub struct AppState {
     pub membership_repo: Arc<dyn MembershipRepository>,
     pub taxonomy_repo: Arc<dyn TaxonomyRepository>,
     pub profile_repo: Arc<dyn ProfileRepository>,
+    pub moderation_repo: Arc<dyn ModerationRepository>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -60,6 +62,7 @@ impl AppState {
         let membership_repo = Arc::new(PostgresMembershipRepository::new(db.pool().clone()));
         let taxonomy_repo = Arc::new(PostgresTaxonomyRepository::new(db.pool().clone()));
         let profile_repo = Arc::new(PostgresProfileRepository::new(db.pool().clone()));
+        let moderation_repo = Arc::new(PostgresModerationRepository::new(db.pool().clone()));
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
@@ -79,6 +82,7 @@ impl AppState {
             membership_repo,
             taxonomy_repo,
             profile_repo,
+            moderation_repo,
             password_hasher,
             token_service,
             rate_limiter,

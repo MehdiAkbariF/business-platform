@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use shared::{BusinessId, UserId};
 use utoipa::ToSchema;
+use crate::moderation::{ClaimStatus, VerificationStatus};
 use crate::validation::ValidationError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
@@ -10,6 +11,7 @@ pub enum BusinessStatus {
     Draft,
     PendingReview,
     Published,
+    Rejected,
     Suspended,
     Archived,
 }
@@ -20,6 +22,7 @@ impl std::fmt::Display for BusinessStatus {
             Self::Draft => write!(f, "DRAFT"),
             Self::PendingReview => write!(f, "PENDING_REVIEW"),
             Self::Published => write!(f, "PUBLISHED"),
+            Self::Rejected => write!(f, "REJECTED"),
             Self::Suspended => write!(f, "SUSPENDED"),
             Self::Archived => write!(f, "ARCHIVED"),
         }
@@ -59,6 +62,9 @@ pub struct Business {
     pub description: Option<String>,
     pub timezone: String,
     pub status: BusinessStatus,
+    pub verification_status: VerificationStatus,
+    pub claim_status: ClaimStatus,
+    pub version: i32,
     pub created_by: UserId,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -76,6 +82,9 @@ impl Business {
             description,
             timezone: "Asia/Tehran".to_string(),
             status: BusinessStatus::Draft,
+            verification_status: VerificationStatus::Unverified,
+            claim_status: ClaimStatus::NotClaimed,
+            version: 1,
             created_by,
             created_at: now,
             updated_at: now,
@@ -86,10 +95,14 @@ impl Business {
     pub fn can_transition_to(&self, next: BusinessStatus) -> bool {
         match (self.status, next) {
             (BusinessStatus::Draft, BusinessStatus::PendingReview) => true,
-            (BusinessStatus::PendingReview, BusinessStatus::Archived) => true,
+            (BusinessStatus::PendingReview, BusinessStatus::Published) => true,
+            (BusinessStatus::PendingReview, BusinessStatus::Rejected) => true,
+            (BusinessStatus::Rejected, BusinessStatus::Draft) => true,
             (BusinessStatus::Published, BusinessStatus::Suspended) => true,
+            (BusinessStatus::Suspended, BusinessStatus::Published) => true,
             (BusinessStatus::Published, BusinessStatus::Archived) => true,
             (BusinessStatus::Suspended, BusinessStatus::Archived) => true,
+            (BusinessStatus::PendingReview, BusinessStatus::Archived) => true,
             _ => false,
         }
     }

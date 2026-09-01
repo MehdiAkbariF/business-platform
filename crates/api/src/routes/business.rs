@@ -167,10 +167,11 @@ pub async fn submit(
 ) -> Result<StatusCode, ApiError> {
     let metadata = extract_client_metadata(&headers);
     let business_id = BusinessId::from_uuid(id);
-    submit_business(
+submit_business(
         state.business_repo.clone(),
         state.membership_repo.clone(),
         state.taxonomy_repo.clone(),
+        state.moderation_repo.clone(),
         state.audit_repo.clone(),
         business_id,
         principal.user_id,

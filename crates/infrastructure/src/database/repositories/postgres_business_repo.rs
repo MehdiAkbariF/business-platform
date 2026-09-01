@@ -4,6 +4,7 @@ use domain::business::{Business, BusinessSlug, BusinessStatus};
 use domain::contact::BusinessContact;
 use domain::location::{BusinessLocation, LocationAccuracy};
 use domain::membership::BusinessMembership;
+use domain::moderation::{ClaimStatus, VerificationStatus};
 use shared::{BusinessId, LocationId, UserId};
 use sqlx::PgPool;
 use application::errors::AppError;
@@ -29,6 +30,9 @@ struct BusinessRow {
     description: Option<String>,
     timezone: String,
     status: String,
+    verification_status: String,
+    claim_status: String,
+    version: i32,
     created_by: Uuid,
     created_at: DateTime<Utc>,
     updated_at: DateTime<Utc>,
@@ -43,9 +47,26 @@ impl TryFrom<BusinessRow> for Business {
             "DRAFT" => BusinessStatus::Draft,
             "PENDING_REVIEW" => BusinessStatus::PendingReview,
             "PUBLISHED" => BusinessStatus::Published,
+            "REJECTED" => BusinessStatus::Rejected,
             "SUSPENDED" => BusinessStatus::Suspended,
             "ARCHIVED" => BusinessStatus::Archived,
             _ => BusinessStatus::Draft,
+        };
+
+        let verification_status = match row.verification_status.as_str() {
+            "PENDING" => VerificationStatus::Pending,
+            "VERIFIED" => VerificationStatus::Verified,
+            "EXPIRED" => VerificationStatus::Expired,
+            "REVOKED" => VerificationStatus::Revoked,
+            _ => VerificationStatus::Unverified,
+        };
+
+        let claim_status = match row.claim_status.as_str() {
+            "PENDING" => ClaimStatus::Pending,
+            "CLAIMED" => ClaimStatus::Claimed,
+            "REJECTED" => ClaimStatus::Rejected,
+            "REVOKED" => ClaimStatus::Revoked,
+            _ => ClaimStatus::NotClaimed,
         };
 
         Ok(Business {
@@ -56,6 +77,9 @@ impl TryFrom<BusinessRow> for Business {
             description: row.description,
             timezone: row.timezone,
             status,
+            verification_status,
+            claim_status,
+            version: row.version,
             created_by: UserId::from_uuid(row.created_by),
             created_at: row.created_at,
             updated_at: row.updated_at,
@@ -129,8 +153,8 @@ impl BusinessRepository for PostgresBusinessRepository {
         let mut tx = self.pool.begin().await.map_err(|e| AppError::internal(e))?;
 
         sqlx::query(
-            "INSERT INTO businesses (id, slug, name, short_description, description, timezone, status, created_by, created_at, updated_at, published_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7::business_status, $8, $9, $10, $11)"
+            "INSERT INTO businesses (id, slug, name, short_description, description, timezone, status, verification_status, claim_status, version, created_by, created_at, updated_at, published_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7::business_status, $8::verification_status, $9::claim_status, $10, $11, $12, $13, $14)"
         )
         .bind(business.id.0)
         .bind(business.slug.as_str())
@@ -139,6 +163,9 @@ impl BusinessRepository for PostgresBusinessRepository {
         .bind(&business.description)
         .bind(&business.timezone)
         .bind(business.status.to_string())
+        .bind(business.verification_status.to_string())
+        .bind(business.claim_status.to_string())
+        .bind(business.version)
         .bind(business.created_by.0)
         .bind(business.created_at)
         .bind(business.updated_at)
@@ -174,7 +201,7 @@ impl BusinessRepository for PostgresBusinessRepository {
 
     async fn find_by_id(&self, id: BusinessId) -> Result<Option<Business>, AppError> {
         let row = sqlx::query_as::<_, BusinessRow>(
-            "SELECT id, slug, name, short_description, description, timezone, status::text, created_by, created_at, updated_at, published_at FROM businesses WHERE id = $1"
+            "SELECT id, slug, name, short_description, description, timezone, status::text, verification_status::text, claim_status::text, version, created_by, created_at, updated_at, published_at FROM businesses WHERE id = $1"
         )
         .bind(id.0)
         .fetch_optional(&self.pool)
@@ -186,7 +213,7 @@ impl BusinessRepository for PostgresBusinessRepository {
 
     async fn find_by_slug(&self, slug: &str) -> Result<Option<Business>, AppError> {
         let row = sqlx::query_as::<_, BusinessRow>(
-            "SELECT id, slug, name, short_description, description, timezone, status::text, created_by, created_at, updated_at, published_at FROM businesses WHERE LOWER(slug) = LOWER($1)"
+            "SELECT id, slug, name, short_description, description, timezone, status::text, verification_status::text, claim_status::text, version, created_by, created_at, updated_at, published_at FROM businesses WHERE LOWER(slug) = LOWER($1)"
         )
         .bind(slug)
         .fetch_optional(&self.pool)
@@ -197,7 +224,7 @@ impl BusinessRepository for PostgresBusinessRepository {
     }
 
     async fn update_profile(&self, id: BusinessId, name: &str, short_desc: Option<&str>, description: Option<&str>, timezone: &str) -> Result<(), AppError> {
-        sqlx::query("UPDATE businesses SET name = $1, short_description = $2, description = $3, timezone = $4, updated_at = NOW() WHERE id = $5")
+        sqlx::query("UPDATE businesses SET name = $1, short_description = $2, description = $3, timezone = $4, version = version + 1, updated_at = NOW() WHERE id = $5")
             .bind(name)
             .bind(short_desc)
             .bind(description)
@@ -211,7 +238,7 @@ impl BusinessRepository for PostgresBusinessRepository {
     }
 
     async fn update_status(&self, id: BusinessId, status: BusinessStatus) -> Result<(), AppError> {
-        sqlx::query("UPDATE businesses SET status = $1::business_status, updated_at = NOW() WHERE id = $2")
+        sqlx::query("UPDATE businesses SET status = $1::business_status, version = version + 1, updated_at = NOW() WHERE id = $2")
             .bind(status.to_string())
             .bind(id.0)
             .execute(&self.pool)

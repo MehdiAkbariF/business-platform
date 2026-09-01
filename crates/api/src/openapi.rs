@@ -4,7 +4,7 @@ use utoipa::{
 };
 
 use crate::errors;
-use crate::routes::{auth, business, health, profile, taxonomy, user};
+use crate::routes::{auth, business, health, moderation, profile, taxonomy, user};
 
 struct SecurityAddon;
 
@@ -62,6 +62,16 @@ impl Modify for SecurityAddon {
         profile::set_business_attributes,
         profile::set_business_social_links,
         profile::delete_media_item,
+        moderation::get_cases,
+        moderation::get_case_detail,
+        moderation::start_review_endpoint,
+        moderation::approve_endpoint,
+        moderation::reject_endpoint,
+        moderation::escalate_endpoint,
+        moderation::suspend_business_endpoint,
+        moderation::restore_business_endpoint,
+        moderation::claim_business_endpoint,
+        moderation::report_business_endpoint,
     ),
     components(
         schemas(
@@ -97,11 +107,18 @@ impl Modify for SecurityAddon {
             application::use_cases::profile::AttributePayload,
             application::use_cases::profile::SaveSocialLinksCommand,
             application::use_cases::profile::SocialLinkPayload,
+            application::use_cases::moderation::ModerationCaseDto,
+            application::use_cases::moderation::DecisionCommand,
+            application::use_cases::moderation::SubmitClaimCommand,
+            application::use_cases::moderation::CreateReportCommand,
             business::UpdateProfileRequest,
             domain::membership::MembershipRole,
             domain::profile::BusinessHoursInterval,
             domain::profile::MediaType,
             domain::profile::SocialPlatform,
+            domain::moderation::ClaimMethod,
+            domain::moderation::ReportReason,
+            domain::moderation::ModerationReasonCode,
         )
     ),
     modifiers(&SecurityAddon),
@@ -112,11 +129,12 @@ impl Modify for SecurityAddon {
         (name = "Business", description = "Business aggregate & membership operations"),
         (name = "Taxonomy", description = "Category & Service taxonomy management"),
         (name = "Profile", description = "Structured profile, media, hours, and attributes"),
+        (name = "Moderation", description = "Admin moderation cases, claims & trust verification"),
     ),
     info(
         title = "Business Discovery Platform API",
-        version = "0.4.0",
-        description = "Production-grade Modular Monolith API with Structured Profiles, Media & Taxonomy"
+        version = "0.5.0",
+        description = "Production-grade Modular Monolith API with Moderation Engine, Verification, Claims & Trust Signals"
     )
 )]
 pub struct ApiDoc;

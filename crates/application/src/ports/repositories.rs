@@ -1,14 +1,15 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use domain::business::Business;
+use domain::business::{Business, BusinessStatus};
 use domain::contact::BusinessContact;
 use domain::location::BusinessLocation;
 use domain::membership::{BusinessMembership, MembershipRole};
+use domain::moderation::{BusinessClaim, BusinessReport, ModerationCase, ModerationDecision};
 use domain::profile::{BusinessHoursInterval, BusinessMedia, SocialPlatform};
 use domain::session::Session;
 use domain::taxonomy::{Category, Service};
 use domain::user::User;
-use shared::{AttributeId, BusinessId, CategoryId, MediaId, ServiceId, SessionId, SocialLinkId, TokenFamilyId, UserId};
+use shared::{AttributeId, BusinessId, CaseId, CategoryId, LocationId, MediaId, ReportId, ServiceId, SessionId, SocialLinkId, TokenFamilyId, UserId};
 use crate::errors::AppError;
 
 #[async_trait]
@@ -36,7 +37,7 @@ pub trait BusinessRepository: Send + Sync {
     async fn find_by_id(&self, id: BusinessId) -> Result<Option<Business>, AppError>;
     async fn find_by_slug(&self, slug: &str) -> Result<Option<Business>, AppError>;
     async fn update_profile(&self, id: BusinessId, name: &str, short_desc: Option<&str>, description: Option<&str>, timezone: &str) -> Result<(), AppError>;
-    async fn update_status(&self, id: BusinessId, status: domain::business::BusinessStatus) -> Result<(), AppError>;
+    async fn update_status(&self, id: BusinessId, status: BusinessStatus) -> Result<(), AppError>;
     async fn count_primary_locations(&self, business_id: BusinessId) -> Result<i64, AppError>;
     
     // Locations & Contacts
@@ -113,23 +114,44 @@ pub struct BusinessSocialLinkRow {
 
 #[async_trait]
 pub trait ProfileRepository: Send + Sync {
-    // Media
     async fn save_media(&self, media: &BusinessMedia) -> Result<(), AppError>;
     async fn get_media(&self, business_id: BusinessId) -> Result<Vec<BusinessMedia>, AppError>;
     async fn find_media_by_id(&self, media_id: MediaId) -> Result<Option<BusinessMedia>, AppError>;
     async fn delete_media(&self, media_id: MediaId) -> Result<(), AppError>;
 
-    // Hours
     async fn save_hours(&self, business_id: BusinessId, hours: &[BusinessHoursInterval]) -> Result<(), AppError>;
     async fn get_hours(&self, business_id: BusinessId) -> Result<Vec<BusinessHoursInterval>, AppError>;
 
-    // Attributes
     async fn save_attributes(&self, business_id: BusinessId, attributes: &[(AttributeId, serde_json::Value)]) -> Result<(), AppError>;
     async fn get_attributes(&self, business_id: BusinessId) -> Result<Vec<BusinessAttributeRow>, AppError>;
 
-    // Social Links
     async fn save_social_links(&self, business_id: BusinessId, links: &[(SocialPlatform, String)]) -> Result<(), AppError>;
     async fn get_social_links(&self, business_id: BusinessId) -> Result<Vec<BusinessSocialLinkRow>, AppError>;
+}
+
+#[async_trait]
+pub trait ModerationRepository: Send + Sync {
+    async fn create_case(&self, case: &ModerationCase) -> Result<(), AppError>;
+    async fn find_case_by_id(&self, id: CaseId) -> Result<Option<ModerationCase>, AppError>;
+    async fn list_cases(&self, limit: i64) -> Result<Vec<ModerationCase>, AppError>;
+    async fn start_review(&self, case_id: CaseId, moderator_id: UserId, expected_version: i32) -> Result<(), AppError>;
+    
+    async fn resolve_case_approve(&self, case_id: CaseId, decision: &ModerationDecision, expected_version: i32) -> Result<(), AppError>;
+    async fn resolve_case_reject(&self, case_id: CaseId, decision: &ModerationDecision, expected_version: i32) -> Result<(), AppError>;
+    async fn escalate_case(&self, case_id: CaseId, decision: &ModerationDecision, expected_version: i32) -> Result<(), AppError>;
+    async fn suspend_business(&self, business_id: BusinessId, actor_id: UserId, note: Option<String>) -> Result<(), AppError>;
+    async fn restore_business(&self, business_id: BusinessId, actor_id: UserId) -> Result<(), AppError>;
+
+    async fn create_claim(&self, claim: &BusinessClaim) -> Result<(), AppError>;
+    async fn get_claims_by_business(&self, business_id: BusinessId) -> Result<Vec<BusinessClaim>, AppError>;
+    async fn get_claims_by_user(&self, user_id: UserId) -> Result<Vec<BusinessClaim>, AppError>;
+
+    async fn create_report(&self, report: &BusinessReport) -> Result<(), AppError>;
+    async fn list_reports(&self, limit: i64) -> Result<Vec<BusinessReport>, AppError>;
+    async fn find_report_by_id(&self, id: ReportId) -> Result<Option<BusinessReport>, AppError>;
+
+    async fn get_trust_signals(&self, business_id: BusinessId) -> Result<Vec<String>, AppError>;
+    async fn add_trust_signal(&self, business_id: BusinessId, signal: &str) -> Result<(), AppError>;
 }
 
 #[async_trait]

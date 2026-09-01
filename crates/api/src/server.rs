@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::{auth, business, health, profile, taxonomy, user},
+    routes::{auth, business, health, moderation, profile, taxonomy, user},
     state::AppState,
 };
 
@@ -45,6 +45,16 @@ pub fn build_router(state: AppState) -> Router {
         .route("/categories/{slug}", get(taxonomy::get_category))
         .route("/services", get(taxonomy::get_services))
         .route("/services/{slug}", get(taxonomy::get_service));
+
+    let admin_routes = Router::new()
+        .route("/moderation/cases", get(moderation::get_cases))
+        .route("/moderation/cases/{id}", get(moderation::get_case_detail))
+        .route("/moderation/cases/{id}/start", post(moderation::start_review_endpoint))
+        .route("/moderation/cases/{id}/approve", post(moderation::approve_endpoint))
+        .route("/moderation/cases/{id}/reject", post(moderation::reject_endpoint))
+        .route("/moderation/cases/{id}/escalate", post(moderation::escalate_endpoint))
+        .route("/businesses/{id}/suspend", post(moderation::suspend_business_endpoint))
+        .route("/businesses/{id}/restore", post(moderation::restore_business_endpoint));
 
     let business_routes = Router::new()
         .route("/", post(business::create))
@@ -91,13 +101,16 @@ pub fn build_router(state: AppState) -> Router {
         .route("/{id}/hours", put(profile::set_business_hours))
         .route("/{id}/attributes", put(profile::set_business_attributes))
         .route("/{id}/social-links", put(profile::set_business_social_links))
-        .route("/{id}/media/{media_id}", delete(profile::delete_media_item));
+        .route("/{id}/media/{media_id}", delete(profile::delete_media_item))
+        .route("/{id}/claim", post(moderation::claim_business_endpoint))
+        .route("/{id}/reports", post(moderation::report_business_endpoint));
 
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))
         .route("/health/ready", get(health::readiness))
         .nest("/api/v1/auth", auth_routes)
         .nest("/api/v1/businesses", business_routes)
+        .nest("/api/v1/admin", admin_routes)
         .nest("/api/v1", taxonomy_routes)
         .nest("/api/v1", user_routes)
         .layer(

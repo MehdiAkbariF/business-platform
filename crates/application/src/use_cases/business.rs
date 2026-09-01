@@ -5,7 +5,9 @@ use shared::{BusinessId, ClientMetadata, LocationId, MembershipId, UserId};
 use utoipa::ToSchema;
 use serde::{Deserialize, Serialize};
 use crate::errors::AppError;
-use crate::ports::repositories::{AuditRepository, BusinessRepository, MembershipRepository, TaxonomyRepository};
+use crate::ports::repositories::{
+    AuditRepository, BusinessRepository, MembershipRepository, ModerationRepository, TaxonomyRepository,
+};
 
 #[derive(Deserialize, ToSchema)]
 pub struct CreateBusinessCommand {
@@ -156,6 +158,7 @@ pub async fn submit_business(
     business_repo: Arc<dyn BusinessRepository>,
     membership_repo: Arc<dyn MembershipRepository>,
     tax_repo: Arc<dyn TaxonomyRepository>,
+    mod_repo: Arc<dyn ModerationRepository>,
     audit_repo: Arc<dyn AuditRepository>,
     business_id: BusinessId,
     user_id: UserId,
@@ -177,11 +180,24 @@ pub async fn submit_business(
 
     let primary_location_count = business_repo.count_primary_locations(business_id).await?;
     let has_primary_location = primary_location_count > 0;
-
     let has_primary_category = tax_repo.has_primary_category(business_id).await?;
 
     business.submit_for_review(has_primary_location, has_primary_category).map_err(|e| AppError::Validation(e.to_string()))?;
     business_repo.update_status(business_id, business.status).await?;
+
+    // Create automatic Moderation Case
+    let case = domain::moderation::ModerationCase {
+        id: shared::CaseId::new(),
+        business_id,
+        case_type: domain::moderation::ModerationCaseType::BusinessSubmission,
+        priority: 0,
+        status: domain::moderation::ModerationCaseStatus::Pending,
+        assigned_to: None,
+        version: 1,
+        created_at: chrono::Utc::now(),
+        resolved_at: None,
+    };
+    mod_repo.create_case(&case).await?;
 
     let _ = audit_repo.record(
         Some(user_id),

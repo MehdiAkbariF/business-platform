@@ -1,13 +1,14 @@
 use std::sync::Arc;
 use bytes::Bytes;
 use domain::business::BusinessStatus;
+use domain::moderation::VerificationStatus;
 use domain::profile::{BusinessHoursInterval, BusinessMedia, MediaStatus, MediaType, SocialPlatform};
 use shared::{AttributeId, BusinessId, ClientMetadata, MediaId, UserId};
 use utoipa::ToSchema;
 use serde::{Deserialize, Serialize};
 use crate::errors::AppError;
 use crate::ports::repositories::{
-    AuditRepository, BusinessRepository, MembershipRepository, ProfileRepository, TaxonomyRepository,
+    AuditRepository, BusinessRepository, MembershipRepository, ModerationRepository, ProfileRepository, TaxonomyRepository,
 };
 use crate::ports::storage::ObjectStoragePort;
 use crate::use_cases::business::{ContactDto, LocationDto};
@@ -45,6 +46,9 @@ pub struct PublicPresentationDto {
     pub short_description: Option<String>,
     pub description: Option<String>,
     pub timezone: String,
+    pub is_verified: bool,
+    pub claim_status: String,
+    pub trust_signals: Vec<String>,
     pub primary_category: Option<String>,
     pub categories: Vec<BusinessCategoryDto>,
     pub services: Vec<BusinessServiceDto>,
@@ -110,6 +114,7 @@ pub async fn get_public_presentation(
     business_repo: Arc<dyn BusinessRepository>,
     tax_repo: Arc<dyn TaxonomyRepository>,
     profile_repo: Arc<dyn ProfileRepository>,
+    mod_repo: Arc<dyn ModerationRepository>,
     storage_endpoint: &str,
     storage_bucket: &str,
     slug: &str,
@@ -122,6 +127,9 @@ pub async fn get_public_presentation(
     if business.status != BusinessStatus::Published {
         return Err(AppError::NotFound("Business not found".to_string()));
     }
+
+    let trust_signals = mod_repo.get_trust_signals(business.id).await?;
+    let is_verified = business.verification_status == VerificationStatus::Verified;
 
     let categories = tax_repo.get_business_categories(business.id).await?;
     let primary_category = categories.iter().find(|c| c.is_primary).map(|c| c.name.clone());
@@ -214,6 +222,9 @@ pub async fn get_public_presentation(
         short_description: business.short_description,
         description: business.description,
         timezone: business.timezone,
+        is_verified,
+        claim_status: business.claim_status.to_string(),
+        trust_signals,
         primary_category,
         categories: cat_dtos,
         services: srv_dtos,

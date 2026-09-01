@@ -3,6 +3,7 @@ pub mod get_me;
 pub mod login;
 pub mod logout;
 pub mod members;
+pub mod moderation;
 pub mod profile;
 pub mod refresh;
 pub mod register;

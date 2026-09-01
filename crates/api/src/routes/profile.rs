@@ -44,10 +44,11 @@ pub async fn get_presentation(
     State(state): State<AppState>,
     Path(slug): Path<String>,
 ) -> Result<Json<PublicPresentationDto>, ApiError> {
-    let presentation = get_public_presentation(
+  let presentation = get_public_presentation(
         state.business_repo.clone(),
         state.taxonomy_repo.clone(),
         state.profile_repo.clone(),
+        state.moderation_repo.clone(),
         &state.config.storage_endpoint,
         &state.config.storage_bucket,
         &slug,
