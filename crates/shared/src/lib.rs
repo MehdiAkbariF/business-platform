@@ -10,18 +10,12 @@ macro_rules! define_id {
         pub struct $name(pub Uuid);
 
         impl $name {
-            pub fn new() -> Self {
-                Self(Uuid::now_v7())
-            }
-            pub fn from_uuid(uuid: Uuid) -> Self {
-                Self(uuid)
-            }
+            pub fn new() -> Self { Self(Uuid::now_v7()) }
+            pub fn from_uuid(uuid: Uuid) -> Self { Self(uuid) }
         }
 
         impl Default for $name {
-            fn default() -> Self {
-                Self::new()
-            }
+            fn default() -> Self { Self::new() }
         }
 
         impl fmt::Display for $name {
@@ -66,6 +60,10 @@ define_id!(PaymentId);
 define_id!(TransactionId);
 define_id!(CampaignId);
 define_id!(CreativeId);
+
+// 7. SEO & Growth (Phase 21)
+define_id!(RedirectId);
+define_id!(LandingPageId);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClientMetadata {

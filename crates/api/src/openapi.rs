@@ -4,7 +4,7 @@ use utoipa::{
 };
 
 use crate::errors;
-use crate::routes::{auth, business, health, moderation, monetization, profile, recommendation, search, taxonomy, user};
+use crate::routes::{auth, business, health, moderation, monetization, profile, recommendation, search, seo, taxonomy, user};
 
 struct SecurityAddon;
 
@@ -81,6 +81,8 @@ impl Modify for SecurityAddon {
         monetization::verify_payment_endpoint,
         monetization::create_campaign_endpoint,
         monetization::get_sponsored_ads,
+        seo::get_business_seo_endpoint,
+        seo::get_landing_page_endpoint,
     ),
     components(
         schemas(
@@ -129,8 +131,14 @@ impl Modify for SecurityAddon {
             application::ports::monetization::PlanDto,
             application::ports::monetization::PaymentDto,
             application::ports::monetization::SponsoredAdDto,
+            application::ports::seo::BusinessSeoPageDto,
+            application::ports::seo::CategoryLocationLandingDto,
             application::use_cases::monetization::SubscribeCommand,
             application::use_cases::monetization::CreateCampaignCommand,
+            domain::seo::PageMetadata,
+            domain::seo::StructuredDataJsonLd,
+            domain::seo::StructuredAddress,
+            domain::seo::StructuredGeo,
             domain::monetization::Money,
             domain::monetization::Currency,
             business::UpdateProfileRequest,
@@ -157,11 +165,12 @@ impl Modify for SecurityAddon {
         (name = "Search", description = "Full text search, geo-discovery & autocomplete"),
         (name = "Recommendation", description = "Personalized & contextual discovery"),
         (name = "Monetization", description = "Subscription plans, payments, ledger & sponsored ads"),
+        (name = "SEO", description = "Metadata, Canonical URLs, Sitemaps & Landing Pages"),
     ),
     info(
         title = "Business Discovery Platform API",
-        version = "0.8.0",
-        description = "Production-grade Modular Monolith API with Monetization, Double-Entry Ledger & Advertising Engine"
+        version = "0.9.0",
+        description = "Production-grade Modular Monolith API with SEO Engine, Sitemaps & Structured Data"
     )
 )]
 pub struct ApiDoc;

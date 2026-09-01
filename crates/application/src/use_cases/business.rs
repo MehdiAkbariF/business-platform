@@ -17,7 +17,7 @@ pub struct CreateBusinessCommand {
     pub description: Option<String>,
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct BusinessDto {
     pub id: BusinessId,
     pub slug: String,
@@ -29,7 +29,7 @@ pub struct BusinessDto {
     pub created_by: UserId,
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct PublicBusinessProfileDto {
     pub slug: String,
     pub name: String,
@@ -39,7 +39,7 @@ pub struct PublicBusinessProfileDto {
     pub contact: Option<ContactDto>,
 }
 
-#[derive(Serialize, Deserialize, ToSchema, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct LocationDto {
     pub id: LocationId,
     pub label: String,
@@ -49,7 +49,7 @@ pub struct LocationDto {
     pub is_primary: bool,
 }
 
-#[derive(Serialize, Deserialize, ToSchema, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct ContactDto {
     pub phone: Option<String>,
     pub mobile: Option<String>,

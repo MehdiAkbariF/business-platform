@@ -3,43 +3,47 @@ use std::env;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AppConfig {
-    // Server & Environment
+    // 1. Server & Environment
     pub app_env: String,
     pub server_host: String,
     pub server_port: u16,
 
-    // Database (PostgreSQL / PostGIS)
+    // 2. Database (PostgreSQL / PostGIS)
     pub database_url: String,
     pub database_max_connections: u32,
     pub database_min_connections: u32,
 
-    // Cache & Rate Limiting (Redis)
+    // 3. Cache & Rate Limiting (Redis)
     pub redis_url: String,
 
-    // Object Storage (MinIO / S3)
+    // 4. Object Storage (MinIO / S3)
     pub storage_endpoint: String,
     pub storage_bucket: String,
     pub storage_access_key: String,
     pub storage_secret_key: String,
     pub storage_region: String,
 
-    // Security & CORS
+    // 5. Security & CORS
     pub cors_allowed_origins: Vec<String>,
 
-    // Authentication & Tokens (Phase 12)
+    // 6. Authentication & Tokens (Phase 12)
     pub jwt_secret: String,
     pub access_token_ttl_seconds: i64,
     pub refresh_token_ttl_seconds: i64,
     pub auth_rate_limit_per_minute: u32,
 
-    // Taxonomy Limits (Phase 14)
+    // 7. Taxonomy Limits (Phase 14)
     pub max_business_categories: usize,
     pub max_business_services: usize,
     pub max_taxonomy_depth: usize,
 
-    // Search Engine & Geo Limits (Phase 17)
+    // 8. Search Engine & Geo Limits (Phase 17)
     pub max_search_radius_km: f64,
     pub max_search_limit: usize,
+
+    // 9. SEO & Public Domain (Phase 21)
+    pub public_origin: String,
+    pub min_seo_landing_inventory: usize,
 }
 
 impl AppConfig {
@@ -118,6 +122,13 @@ impl AppConfig {
             .unwrap_or_else(|_| "50".to_string())
             .parse::<usize>()?;
 
+        // 9. SEO & Public Origin
+        let public_origin = env::var("PUBLIC_ORIGIN")
+            .unwrap_or_else(|_| "https://platform.com".to_string());
+        let min_seo_landing_inventory = env::var("MIN_SEO_LANDING_INVENTORY")
+            .unwrap_or_else(|_| "2".to_string())
+            .parse::<usize>()?;
+
         Ok(Self {
             app_env,
             server_host,
@@ -141,6 +152,8 @@ impl AppConfig {
             max_taxonomy_depth,
             max_search_radius_km,
             max_search_limit,
+            public_origin,
+            min_seo_landing_inventory,
         })
     }
 }

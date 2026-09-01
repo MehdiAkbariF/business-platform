@@ -6,5 +6,6 @@ pub mod monetization;
 pub mod profile;
 pub mod recommendation;
 pub mod search;
+pub mod seo;
 pub mod taxonomy;
 pub mod user;

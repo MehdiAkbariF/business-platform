@@ -5,6 +5,7 @@ pub mod postgres_moderation_repo;
 pub mod postgres_monetization_repo;
 pub mod postgres_profile_repo;
 pub mod postgres_recommendation_repo;
+pub mod postgres_seo_repo;
 pub mod postgres_session_repo;
 pub mod postgres_taxonomy_repo;
 pub mod postgres_user_repo;

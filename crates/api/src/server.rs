@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::{auth, business, health, moderation, monetization, profile, recommendation, search, taxonomy, user},
+    routes::{auth, business, health, moderation, monetization, profile, recommendation, search, seo, taxonomy, user},
     state::AppState,
 };
 
@@ -57,6 +57,10 @@ pub fn build_router(state: AppState) -> Router {
         .route("/plans", get(monetization::get_plans))
         .route("/payments/{id}/verify", post(monetization::verify_payment_endpoint))
         .route("/ads/sponsored", get(monetization::get_sponsored_ads));
+
+    let seo_routes = Router::new()
+        .route("/business/{slug}", get(seo::get_business_seo_endpoint))
+        .route("/landing/{city}/{category_slug}", get(seo::get_landing_page_endpoint));
 
     let admin_routes = Router::new()
         .route("/moderation/cases", get(moderation::get_cases))
@@ -123,11 +127,15 @@ pub fn build_router(state: AppState) -> Router {
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))
         .route("/health/ready", get(health::readiness))
+        .route("/robots.txt", get(seo::get_robots_txt))
+        .route("/sitemap.xml", get(seo::get_sitemap_index))
+        .route("/sitemaps/businesses.xml", get(seo::get_businesses_sitemap))
         .nest("/api/v1/auth", auth_routes)
         .nest("/api/v1/businesses", business_routes)
         .nest("/api/v1/search", search_routes)
         .nest("/api/v1/recommendations", rec_routes)
         .nest("/api/v1/billing", billing_routes)
+        .nest("/api/v1/seo", seo_routes)
         .nest("/api/v1/admin", admin_routes)
         .nest("/api/v1", taxonomy_routes)
         .nest("/api/v1", user_routes)

@@ -10,4 +10,5 @@ pub mod recommendation;
 pub mod refresh;
 pub mod register;
 pub mod search;
+pub mod seo;
 pub mod taxonomy;
