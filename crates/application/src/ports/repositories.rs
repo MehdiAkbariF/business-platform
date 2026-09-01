@@ -9,7 +9,10 @@ use domain::profile::{BusinessHoursInterval, BusinessMedia, SocialPlatform};
 use domain::session::Session;
 use domain::taxonomy::{Category, Service};
 use domain::user::User;
-use shared::{AttributeId, BusinessId, CaseId, CategoryId, LocationId, MediaId, ReportId, ServiceId, SessionId, SocialLinkId, TokenFamilyId, UserId};
+use shared::{
+    AttributeId, BusinessId, CaseId, CategoryId, MediaId, ReportId, ServiceId, SessionId, SocialLinkId,
+    TokenFamilyId, UserId,
+};
 use crate::errors::AppError;
 
 #[async_trait]

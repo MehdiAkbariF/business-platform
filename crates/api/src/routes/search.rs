@@ -23,7 +23,7 @@ pub struct AutocompleteQuery {
         SearchRequestQuery
     ),
     responses(
-        (status = 200, description = "Search results matching query and filters", body = SearchResponseDto),
+        (status = 200, description = "Search results ranked deterministically", body = SearchResponseDto),
         (status = 400, description = "Invalid search parameters", body = crate::errors::ApiErrorResponse)
     )
 )]
@@ -31,7 +31,13 @@ pub async fn search_businesses(
     State(state): State<AppState>,
     Query(query): Query<SearchRequestQuery>,
 ) -> Result<Json<SearchResponseDto>, ApiError> {
-    let resp = execute_search(state.search_port.clone(), query, state.config.max_search_radius_km).await?;
+    let resp = execute_search(
+        state.search_port.clone(),
+        state.ranking_engine.clone(),
+        query,
+        state.config.max_search_radius_km,
+    ).await?;
+
     Ok(Json(resp))
 }
 

@@ -5,6 +5,7 @@ pub mod location;
 pub mod membership;
 pub mod moderation;
 pub mod profile;
+pub mod ranking;
 pub mod search;
 pub mod session;
 pub mod taxonomy;

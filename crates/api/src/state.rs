@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use application::ports::{
+    ranking::RankingEnginePort,
     repositories::{
         AuditRepository, BusinessRepository, MembershipRepository, ModerationRepository, ProfileRepository,
         SessionRepository, TaxonomyRepository, UserRepository,
@@ -23,6 +24,7 @@ use infrastructure::{
         },
         PostgresDatabase,
     },
+    ranking::deterministic_engine::DeterministicRankingEngine,
     rate_limiter::redis_limiter::RedisRateLimiter,
     redis::RedisClient,
     search::postgres_search::PostgresBusinessSearch,
@@ -45,6 +47,7 @@ pub struct AppState {
     pub profile_repo: Arc<dyn ProfileRepository>,
     pub moderation_repo: Arc<dyn ModerationRepository>,
     pub search_port: Arc<dyn BusinessSearchPort>,
+    pub ranking_engine: Arc<dyn RankingEnginePort>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -71,6 +74,7 @@ impl AppState {
             config.storage_endpoint.clone(),
             config.storage_bucket.clone(),
         ));
+        let ranking_engine = Arc::new(DeterministicRankingEngine::new(config.max_search_radius_km));
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
@@ -92,6 +96,7 @@ impl AppState {
             profile_repo,
             moderation_repo,
             search_port,
+            ranking_engine,
             password_hasher,
             token_service,
             rate_limiter,
