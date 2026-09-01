@@ -15,14 +15,81 @@ impl UserId {
         Self(uuid)
     }
 }
-
 impl Default for UserId {
     fn default() -> Self {
         Self::new()
     }
 }
-
 impl fmt::Display for UserId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct BusinessId(pub Uuid);
+
+impl BusinessId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for BusinessId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for BusinessId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct MembershipId(pub Uuid);
+
+impl MembershipId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for MembershipId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for MembershipId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct LocationId(pub Uuid);
+
+impl LocationId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for LocationId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for LocationId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -40,13 +107,11 @@ impl SessionId {
         Self(uuid)
     }
 }
-
 impl Default for SessionId {
     fn default() -> Self {
         Self::new()
     }
 }
-
 impl fmt::Display for SessionId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
@@ -65,13 +130,11 @@ impl TokenFamilyId {
         Self(uuid)
     }
 }
-
 impl Default for TokenFamilyId {
     fn default() -> Self {
         Self::new()
     }
 }
-
 impl fmt::Display for TokenFamilyId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
@@ -87,13 +150,11 @@ impl AuditLogId {
         Self(Uuid::now_v7())
     }
 }
-
 impl Default for AuditLogId {
     fn default() -> Self {
         Self::new()
     }
 }
-
 impl fmt::Display for AuditLogId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)

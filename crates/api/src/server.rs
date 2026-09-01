@@ -1,7 +1,7 @@
 use axum::{
     http::StatusCode,
     middleware,
-    routing::{get, post},
+    routing::{delete, get, patch, post},
     Router,
 };
 use std::time::Duration;
@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::{auth, health, user},
+    routes::{auth, business, health, user},
     state::AppState,
 };
 
@@ -40,10 +40,33 @@ pub fn build_router(state: AppState) -> Router {
     let user_routes = Router::new()
         .route("/me", get(user::get_me));
 
+    let business_routes = Router::new()
+        .route("/", post(business::create))
+        .route("/manage/{id}", get(business::get_management))
+        .route(
+            "/{id}",
+            get(business::get_public).patch(business::update_profile),
+        )
+        .route("/{id}/submit", post(business::submit))
+        .route("/{id}/archive", post(business::archive))
+        .route(
+            "/{id}/members",
+            get(business::get_members).post(business::add_business_member),
+        )
+        .route(
+            "/{id}/members/{user_id}",
+            delete(business::remove_business_member),
+        )
+        .route(
+            "/{id}/members/{user_id}/role",
+            patch(business::change_role),
+        );
+
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))
         .route("/health/ready", get(health::readiness))
         .nest("/api/v1/auth", auth_routes)
+        .nest("/api/v1/businesses", business_routes)
         .nest("/api/v1", user_routes)
         .layer(
             ServiceBuilder::new()

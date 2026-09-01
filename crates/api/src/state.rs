@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use application::ports::{
-    repositories::{AuditRepository, SessionRepository, UserRepository},
+    repositories::{AuditRepository, BusinessRepository, MembershipRepository, SessionRepository, UserRepository},
     security::{PasswordHasherPort, RateLimiterPort, TokenServicePort},
     storage::ObjectStoragePort,
 };
@@ -9,6 +9,8 @@ use infrastructure::{
     database::{
         repositories::{
             postgres_audit_repo::PostgresAuditRepository,
+            postgres_business_repo::PostgresBusinessRepository,
+            postgres_membership_repo::PostgresMembershipRepository,
             postgres_session_repo::PostgresSessionRepository,
             postgres_user_repo::PostgresUserRepository,
         },
@@ -29,6 +31,8 @@ pub struct AppState {
     pub user_repo: Arc<dyn UserRepository>,
     pub session_repo: Arc<dyn SessionRepository>,
     pub audit_repo: Arc<dyn AuditRepository>,
+    pub business_repo: Arc<dyn BusinessRepository>,
+    pub membership_repo: Arc<dyn MembershipRepository>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -45,6 +49,8 @@ impl AppState {
         let user_repo = Arc::new(PostgresUserRepository::new(db.pool().clone()));
         let session_repo = Arc::new(PostgresSessionRepository::new(db.pool().clone()));
         let audit_repo = Arc::new(PostgresAuditRepository::new(db.pool().clone()));
+        let business_repo = Arc::new(PostgresBusinessRepository::new(db.pool().clone()));
+        let membership_repo = Arc::new(PostgresMembershipRepository::new(db.pool().clone()));
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
@@ -60,6 +66,8 @@ impl AppState {
             user_repo,
             session_repo,
             audit_repo,
+            business_repo,
+            membership_repo,
             password_hasher,
             token_service,
             rate_limiter,
