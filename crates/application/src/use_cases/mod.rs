@@ -1,3 +1,4 @@
+pub mod admin;
 pub mod business;
 pub mod get_me;
 pub mod login;
@@ -10,5 +11,6 @@ pub mod recommendation;
 pub mod refresh;
 pub mod register;
 pub mod search;
+pub mod security;
 pub mod seo;
 pub mod taxonomy;

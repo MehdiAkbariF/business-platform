@@ -1,3 +1,4 @@
+pub mod admin;
 pub mod business;
 pub mod contact;
 pub mod events;
@@ -9,6 +10,7 @@ pub mod profile;
 pub mod ranking;
 pub mod recommendation;
 pub mod search;
+pub mod security;
 pub mod seo;
 pub mod session;
 pub mod taxonomy;

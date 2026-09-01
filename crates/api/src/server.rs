@@ -15,9 +15,9 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::{
-    middleware::request_id::trace_request_id,
+    middleware::{request_id::trace_request_id, security_headers::apply_security_headers},
     openapi::ApiDoc,
-    routes::{auth, business, health, moderation, monetization, profile, recommendation, search, seo, taxonomy, user},
+    routes::{admin, auth, business, health, moderation, monetization, profile, recommendation, search, seo, taxonomy, user},
     state::AppState,
 };
 
@@ -63,6 +63,18 @@ pub fn build_router(state: AppState) -> Router {
         .route("/landing/{city}/{category_slug}", get(seo::get_landing_page_endpoint));
 
     let admin_routes = Router::new()
+        .route("/dashboard", get(admin::get_dashboard_endpoint))
+        .route("/users", get(admin::list_users_endpoint))
+        .route("/users/{id}/suspend", post(admin::suspend_user_endpoint))
+        .route("/users/{id}/restore", post(admin::restore_user_endpoint))
+        .route("/users/{id}/revoke-sessions", post(admin::revoke_sessions_endpoint))
+        .route("/appeals", get(admin::list_appeals_endpoint))
+        .route("/appeals/{id}/resolve", post(admin::resolve_appeal_endpoint))
+        .route("/feature-flags", get(admin::list_flags_endpoint))
+        .route("/feature-flags/{key}", put(admin::set_flag_endpoint))
+        .route("/configs", get(admin::list_configs_endpoint))
+        .route("/configs/{key}", put(admin::set_config_endpoint))
+        .route("/audits", get(admin::get_audits_endpoint))
         .route("/moderation/cases", get(moderation::get_cases))
         .route("/moderation/cases/{id}", get(moderation::get_case_detail))
         .route("/moderation/cases/{id}/start", post(moderation::start_review_endpoint))
@@ -122,7 +134,8 @@ pub fn build_router(state: AppState) -> Router {
         .route("/{id}/reports", post(moderation::report_business_endpoint))
         .route("/{id}/similar", get(recommendation::get_similar_businesses))
         .route("/{id}/subscribe", post(monetization::subscribe_business_endpoint))
-        .route("/{id}/campaigns", post(monetization::create_campaign_endpoint));
+        .route("/{id}/campaigns", post(monetization::create_campaign_endpoint))
+        .route("/{id}/appeals", post(admin::submit_appeal_endpoint));
 
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))
@@ -143,6 +156,7 @@ pub fn build_router(state: AppState) -> Router {
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
                 .layer(middleware::from_fn(trace_request_id))
+                .layer(middleware::from_fn(apply_security_headers)) // Security Hardening Middleware
                 .layer(TimeoutLayer::with_status_code(
                     StatusCode::REQUEST_TIMEOUT,
                     Duration::from_secs(30),

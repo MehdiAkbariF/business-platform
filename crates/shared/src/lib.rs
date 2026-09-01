@@ -65,6 +65,16 @@ define_id!(CreativeId);
 define_id!(RedirectId);
 define_id!(LandingPageId);
 
+// 8. Admin & Operations (Phase 22)
+define_id!(AppealId);
+
+// 9. Security & Hardening (Phase 23)
+define_id!(IncidentId);
+
+// 10. Infrastructure & Jobs (Phase 24)
+define_id!(JobId);
+define_id!(OutboxId);
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClientMetadata {
     pub ip_address: Option<String>,

@@ -1,8 +1,10 @@
+pub mod admin;
 pub mod monetization;
 pub mod ranking;
 pub mod recommendation;
 pub mod repositories;
 pub mod search;
 pub mod security;
+pub mod security_ops;
 pub mod seo;
 pub mod storage;

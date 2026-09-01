@@ -4,7 +4,7 @@ use utoipa::{
 };
 
 use crate::errors;
-use crate::routes::{auth, business, health, moderation, monetization, profile, recommendation, search, seo, taxonomy, user};
+use crate::routes::{admin, auth, business, health, moderation, monetization, profile, recommendation, search, seo, taxonomy, user};
 
 struct SecurityAddon;
 
@@ -83,6 +83,19 @@ impl Modify for SecurityAddon {
         monetization::get_sponsored_ads,
         seo::get_business_seo_endpoint,
         seo::get_landing_page_endpoint,
+        admin::get_dashboard_endpoint,
+        admin::list_users_endpoint,
+        admin::suspend_user_endpoint,
+        admin::restore_user_endpoint,
+        admin::revoke_sessions_endpoint,
+        admin::submit_appeal_endpoint,
+        admin::list_appeals_endpoint,
+        admin::resolve_appeal_endpoint,
+        admin::list_flags_endpoint,
+        admin::set_flag_endpoint,
+        admin::list_configs_endpoint,
+        admin::set_config_endpoint,
+        admin::get_audits_endpoint,
     ),
     components(
         schemas(
@@ -133,8 +146,19 @@ impl Modify for SecurityAddon {
             application::ports::monetization::SponsoredAdDto,
             application::ports::seo::BusinessSeoPageDto,
             application::ports::seo::CategoryLocationLandingDto,
+            application::ports::admin::AdminUserDto,
+            application::ports::admin::BusinessAppealDto,
+            application::ports::admin::AuditLogEntryDto,
             application::use_cases::monetization::SubscribeCommand,
             application::use_cases::monetization::CreateCampaignCommand,
+            application::use_cases::admin::SubmitAppealCommand,
+            application::use_cases::admin::ResolveAppealCommand,
+            application::use_cases::admin::UpdateFeatureFlagCommand,
+            application::use_cases::admin::UpdateConfigCommand,
+            domain::admin::AdminDashboardMetrics,
+            domain::admin::AppealStatus,
+            domain::admin::FeatureFlagItem,
+            domain::admin::SystemConfigItem,
             domain::seo::PageMetadata,
             domain::seo::StructuredDataJsonLd,
             domain::seo::StructuredAddress,
@@ -166,11 +190,12 @@ impl Modify for SecurityAddon {
         (name = "Recommendation", description = "Personalized & contextual discovery"),
         (name = "Monetization", description = "Subscription plans, payments, ledger & sponsored ads"),
         (name = "SEO", description = "Metadata, Canonical URLs, Sitemaps & Landing Pages"),
+        (name = "Admin", description = "Admin operations, RBAC, feature flags & platform control plane"),
     ),
     info(
         title = "Business Discovery Platform API",
-        version = "0.9.0",
-        description = "Production-grade Modular Monolith API with SEO Engine, Sitemaps & Structured Data"
+        version = "1.0.0",
+        description = "Complete Modular Monolith Backend with Admin Operations, Granular RBAC, Audit Trail & Security Controls"
     )
 )]
 pub struct ApiDoc;
