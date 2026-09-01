@@ -1,4 +1,5 @@
 use axum::{
+    http::StatusCode,
     middleware,
     routing::get,
     Router,
@@ -6,7 +7,7 @@ use axum::{
 use std::time::Duration;
 use tower::ServiceBuilder;
 use tower_http::{
-    cors::{Any, CorsLayer},
+    cors::CorsLayer,
     timeout::TimeoutLayer,
     trace::TraceLayer,
 };
@@ -36,7 +37,10 @@ pub fn build_router(state: AppState) -> Router {
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
                 .layer(middleware::from_fn(trace_request_id))
-                .layer(TimeoutLayer::new(Duration::from_secs(30)))
+             .layer(TimeoutLayer::with_status_code(
+                    StatusCode::REQUEST_TIMEOUT,
+                    Duration::from_secs(30),
+                ))
                 .layer(cors),
         )
         .with_state(state);

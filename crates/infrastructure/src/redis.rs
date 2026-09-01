@@ -1,5 +1,4 @@
 use redis::aio::ConnectionManager;
-use redis::AsyncCommands;
 use application::errors::AppError;
 
 #[derive(Clone)]
