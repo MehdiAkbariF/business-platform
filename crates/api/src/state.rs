@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use application::ports::{
-    repositories::{AuditRepository, BusinessRepository, MembershipRepository, SessionRepository, UserRepository},
+    repositories::{AuditRepository, BusinessRepository, MembershipRepository, SessionRepository, TaxonomyRepository, UserRepository},
     security::{PasswordHasherPort, RateLimiterPort, TokenServicePort},
     storage::ObjectStoragePort,
 };
@@ -12,6 +12,7 @@ use infrastructure::{
             postgres_business_repo::PostgresBusinessRepository,
             postgres_membership_repo::PostgresMembershipRepository,
             postgres_session_repo::PostgresSessionRepository,
+            postgres_taxonomy_repo::PostgresTaxonomyRepository,
             postgres_user_repo::PostgresUserRepository,
         },
         PostgresDatabase,
@@ -33,6 +34,7 @@ pub struct AppState {
     pub audit_repo: Arc<dyn AuditRepository>,
     pub business_repo: Arc<dyn BusinessRepository>,
     pub membership_repo: Arc<dyn MembershipRepository>,
+    pub taxonomy_repo: Arc<dyn TaxonomyRepository>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -51,6 +53,7 @@ impl AppState {
         let audit_repo = Arc::new(PostgresAuditRepository::new(db.pool().clone()));
         let business_repo = Arc::new(PostgresBusinessRepository::new(db.pool().clone()));
         let membership_repo = Arc::new(PostgresMembershipRepository::new(db.pool().clone()));
+        let taxonomy_repo = Arc::new(PostgresTaxonomyRepository::new(db.pool().clone()));
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
@@ -68,6 +71,7 @@ impl AppState {
             audit_repo,
             business_repo,
             membership_repo,
+            taxonomy_repo,
             password_hasher,
             token_service,
             rate_limiter,

@@ -90,9 +90,12 @@ impl Business {
         }
     }
 
-    pub fn submit_for_review(&mut self, has_primary_location: bool) -> Result<(), ValidationError> {
+    pub fn submit_for_review(&mut self, has_primary_location: bool, has_primary_category: bool) -> Result<(), ValidationError> {
         if !has_primary_location {
             return Err(ValidationError::Required("A primary location is mandatory before submission".to_string()));
+        }
+        if !has_primary_category {
+            return Err(ValidationError::Required("A primary category is mandatory before submission".to_string()));
         }
         if !self.can_transition_to(BusinessStatus::PendingReview) {
             return Err(ValidationError::InvalidFormat("status".to_string(), format!("Cannot transition from {} to PENDING_REVIEW", self.status)));

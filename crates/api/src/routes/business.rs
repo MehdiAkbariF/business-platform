@@ -166,6 +166,7 @@ pub async fn submit(
     submit_business(
         state.business_repo.clone(),
         state.membership_repo.clone(),
+        state.taxonomy_repo.clone(),
         state.audit_repo.clone(),
         business_id,
         principal.user_id,

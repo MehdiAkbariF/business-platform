@@ -1,7 +1,7 @@
 use axum::{
     http::StatusCode,
     middleware,
-    routing::{delete, get, patch, post},
+    routing::{delete, get, patch, post, put},
     Router,
 };
 use std::time::Duration;
@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::{auth, business, health, user},
+    routes::{auth, business, health, taxonomy, user},
     state::AppState,
 };
 
@@ -40,6 +40,12 @@ pub fn build_router(state: AppState) -> Router {
     let user_routes = Router::new()
         .route("/me", get(user::get_me));
 
+    let taxonomy_routes = Router::new()
+        .route("/categories", get(taxonomy::get_categories))
+        .route("/categories/{slug}", get(taxonomy::get_category))
+        .route("/services", get(taxonomy::get_services))
+        .route("/services/{slug}", get(taxonomy::get_service));
+
     let business_routes = Router::new()
         .route("/", post(business::create))
         .route("/manage/{id}", get(business::get_management))
@@ -60,6 +66,26 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/{id}/members/{user_id}/role",
             patch(business::change_role),
+        )
+        .route(
+            "/{id}/categories",
+            get(taxonomy::get_business_categories).post(taxonomy::add_business_category),
+        )
+        .route(
+            "/{id}/categories/{category_id}",
+            delete(taxonomy::remove_business_category_endpoint),
+        )
+        .route(
+            "/{id}/categories/{category_id}/primary",
+            put(taxonomy::set_primary_category_endpoint),
+        )
+        .route(
+            "/{id}/services",
+            get(taxonomy::get_business_services).post(taxonomy::add_business_service_endpoint),
+        )
+        .route(
+            "/{id}/services/{service_id}",
+            delete(taxonomy::remove_business_service_endpoint),
         );
 
     let mut router = Router::new()
@@ -67,6 +93,7 @@ pub fn build_router(state: AppState) -> Router {
         .route("/health/ready", get(health::readiness))
         .nest("/api/v1/auth", auth_routes)
         .nest("/api/v1/businesses", business_routes)
+        .nest("/api/v1", taxonomy_routes)
         .nest("/api/v1", user_routes)
         .layer(
             ServiceBuilder::new()

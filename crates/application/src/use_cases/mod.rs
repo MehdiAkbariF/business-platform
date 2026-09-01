@@ -5,3 +5,4 @@ pub mod logout;
 pub mod members;
 pub mod refresh;
 pub mod register;
+pub mod taxonomy;

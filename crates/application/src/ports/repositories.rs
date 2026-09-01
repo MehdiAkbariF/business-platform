@@ -1,12 +1,13 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use domain::business::{Business, BusinessSlug};
+use domain::business::Business;
 use domain::contact::BusinessContact;
 use domain::location::BusinessLocation;
 use domain::membership::{BusinessMembership, MembershipRole};
 use domain::session::Session;
+use domain::taxonomy::{Category, Service, TaxonomyAlias};
 use domain::user::User;
-use shared::{BusinessId, LocationId, MembershipId, SessionId, TokenFamilyId, UserId};
+use shared::{BusinessId, CategoryId, LocationId, MembershipId, ServiceId, SessionId, TokenFamilyId, UserId};
 use crate::errors::AppError;
 
 #[async_trait]
@@ -53,6 +54,51 @@ pub trait MembershipRepository: Send + Sync {
     async fn remove_member(&self, business_id: BusinessId, user_id: UserId) -> Result<(), AppError>;
     async fn change_role(&self, business_id: BusinessId, user_id: UserId, role: MembershipRole) -> Result<(), AppError>;
     async fn count_active_owners(&self, business_id: BusinessId) -> Result<i64, AppError>;
+}
+
+pub struct BusinessCategoryRow {
+    pub category_id: CategoryId,
+    pub name: String,
+    pub slug: String,
+    pub is_primary: bool,
+}
+
+pub struct BusinessServiceRow {
+    pub service_id: ServiceId,
+    pub name: String,
+    pub slug: String,
+    pub is_active: bool,
+    pub sort_order: i32,
+}
+
+#[async_trait]
+pub trait TaxonomyRepository: Send + Sync {
+    // Read Taxonomy
+    async fn list_active_categories(&self) -> Result<Vec<Category>, AppError>;
+    async fn find_category_by_id(&self, id: CategoryId) -> Result<Option<Category>, AppError>;
+    async fn find_category_by_slug(&self, slug: &str) -> Result<Option<Category>, AppError>;
+    async fn calculate_category_depth(&self, id: CategoryId) -> Result<usize, AppError>;
+
+    async fn list_active_services(&self) -> Result<Vec<Service>, AppError>;
+    async fn find_service_by_id(&self, id: ServiceId) -> Result<Option<Service>, AppError>;
+    async fn find_service_by_slug(&self, slug: &str) -> Result<Option<Service>, AppError>;
+
+    // Compatibility check
+    async fn is_service_compatible_with_categories(&self, service_id: ServiceId, category_ids: &[CategoryId]) -> Result<bool, AppError>;
+
+    // Business Classification
+    async fn get_business_categories(&self, business_id: BusinessId) -> Result<Vec<BusinessCategoryRow>, AppError>;
+    async fn add_business_category(&self, business_id: BusinessId, category_id: CategoryId, is_primary: bool) -> Result<(), AppError>;
+    async fn remove_business_category(&self, business_id: BusinessId, category_id: CategoryId) -> Result<(), AppError>;
+    async fn set_primary_category(&self, business_id: BusinessId, category_id: CategoryId) -> Result<(), AppError>;
+    async fn count_business_categories(&self, business_id: BusinessId) -> Result<i64, AppError>;
+    async fn has_primary_category(&self, business_id: BusinessId) -> Result<bool, AppError>;
+
+    // Business Services
+    async fn get_business_services(&self, business_id: BusinessId) -> Result<Vec<BusinessServiceRow>, AppError>;
+    async fn add_business_service(&self, business_id: BusinessId, service_id: ServiceId, sort_order: i32) -> Result<(), AppError>;
+    async fn remove_business_service(&self, business_id: BusinessId, service_id: ServiceId) -> Result<(), AppError>;
+    async fn count_business_services(&self, business_id: BusinessId) -> Result<i64, AppError>;
 }
 
 #[async_trait]

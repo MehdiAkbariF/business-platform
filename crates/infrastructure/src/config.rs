@@ -21,6 +21,10 @@ pub struct AppConfig {
     pub access_token_ttl_seconds: i64,
     pub refresh_token_ttl_seconds: i64,
     pub auth_rate_limit_per_minute: u32,
+    // Taxonomy Limits
+    pub max_business_categories: usize,
+    pub max_business_services: usize,
+    pub max_taxonomy_depth: usize,
 }
 
 impl AppConfig {
@@ -74,6 +78,10 @@ impl AppConfig {
             .unwrap_or_else(|_| "20".to_string())
             .parse::<u32>()?;
 
+        let max_business_categories = env::var("MAX_BUSINESS_CATEGORIES").unwrap_or_else(|_| "5".to_string()).parse::<usize>()?;
+        let max_business_services = env::var("MAX_BUSINESS_SERVICES").unwrap_or_else(|_| "20".to_string()).parse::<usize>()?;
+        let max_taxonomy_depth = env::var("MAX_TAXONOMY_DEPTH").unwrap_or_else(|_| "4".to_string()).parse::<usize>()?;
+
         Ok(Self {
             app_env,
             server_host,
@@ -92,6 +100,9 @@ impl AppConfig {
             access_token_ttl_seconds,
             refresh_token_ttl_seconds,
             auth_rate_limit_per_minute,
+            max_business_categories,
+            max_business_services,
+            max_taxonomy_depth,
         })
     }
 }

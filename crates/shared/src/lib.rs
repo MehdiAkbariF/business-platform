@@ -51,6 +51,75 @@ impl fmt::Display for BusinessId {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(transparent)]
+pub struct CategoryId(pub Uuid);
+
+impl CategoryId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for CategoryId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for CategoryId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct ServiceId(pub Uuid);
+
+impl ServiceId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for ServiceId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for ServiceId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
+pub struct AliasId(pub Uuid);
+
+impl AliasId {
+    pub fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+impl Default for AliasId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl fmt::Display for AliasId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(transparent)]
 pub struct MembershipId(pub Uuid);
 
 impl MembershipId {

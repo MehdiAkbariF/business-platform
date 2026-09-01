@@ -1,13 +1,11 @@
 use std::sync::Arc;
 use domain::business::{Business, BusinessSlug, BusinessStatus};
-use domain::contact::BusinessContact;
-use domain::location::{BusinessLocation, LocationAccuracy};
-use domain::membership::{BusinessMembership, MembershipRole, MembershipStatus};
+use domain::membership::{BusinessMembership, MembershipRole};
 use shared::{BusinessId, ClientMetadata, LocationId, MembershipId, UserId};
 use utoipa::ToSchema;
 use serde::{Deserialize, Serialize};
 use crate::errors::AppError;
-use crate::ports::repositories::{AuditRepository, BusinessRepository, MembershipRepository};
+use crate::ports::repositories::{AuditRepository, BusinessRepository, MembershipRepository, TaxonomyRepository};
 
 #[derive(Deserialize, ToSchema)]
 pub struct CreateBusinessCommand {
@@ -74,7 +72,6 @@ pub async fn create_business(
     let business = Business::new(business_id, slug, name.to_string(), cmd.description, user_id);
     let owner_membership = BusinessMembership::new(MembershipId::new(), business_id, user_id, MembershipRole::Owner);
 
-    // Atomic transaction (Business + Owner Membership)
     business_repo.create_with_owner(&business, &owner_membership).await?;
 
     let _ = audit_repo.record(
@@ -135,6 +132,7 @@ pub async fn update_business_profile(
 pub async fn submit_business(
     business_repo: Arc<dyn BusinessRepository>,
     membership_repo: Arc<dyn MembershipRepository>,
+    tax_repo: Arc<dyn TaxonomyRepository>,
     audit_repo: Arc<dyn AuditRepository>,
     business_id: BusinessId,
     user_id: UserId,
@@ -155,9 +153,11 @@ pub async fn submit_business(
         .ok_or_else(|| AppError::NotFound("Business not found".to_string()))?;
 
     let primary_location_count = business_repo.count_primary_locations(business_id).await?;
-    let has_primary = primary_location_count > 0;
+    let has_primary_location = primary_location_count > 0;
 
-    business.submit_for_review(has_primary).map_err(|e| AppError::Validation(e.to_string()))?;
+    let has_primary_category = tax_repo.has_primary_category(business_id).await?;
+
+    business.submit_for_review(has_primary_location, has_primary_category).map_err(|e| AppError::Validation(e.to_string()))?;
     business_repo.update_status(business_id, business.status).await?;
 
     let _ = audit_repo.record(
@@ -216,7 +216,6 @@ pub async fn get_public_profile(
         .await?
         .ok_or_else(|| AppError::NotFound("Business not found".to_string()))?;
 
-    // Security boundary: Only PUBLISHED businesses are publicly accessible
     if business.status != BusinessStatus::Published {
         return Err(AppError::NotFound("Business not found".to_string()));
     }

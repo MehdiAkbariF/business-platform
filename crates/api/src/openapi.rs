@@ -4,7 +4,7 @@ use utoipa::{
 };
 
 use crate::errors;
-use crate::routes::{auth, business, health, user};
+use crate::routes::{auth, business, health, taxonomy, user};
 
 struct SecurityAddon;
 
@@ -46,6 +46,17 @@ impl Modify for SecurityAddon {
         business::add_business_member,
         business::remove_business_member,
         business::change_role,
+        taxonomy::get_categories,
+        taxonomy::get_category,
+        taxonomy::get_services,
+        taxonomy::get_service,
+        taxonomy::get_business_categories,
+        taxonomy::add_business_category,
+        taxonomy::remove_business_category_endpoint,
+        taxonomy::set_primary_category_endpoint,
+        taxonomy::get_business_services,
+        taxonomy::add_business_service_endpoint,
+        taxonomy::remove_business_service_endpoint,
     ),
     components(
         schemas(
@@ -67,6 +78,12 @@ impl Modify for SecurityAddon {
             application::use_cases::members::MemberDto,
             application::use_cases::members::AddMemberCommand,
             application::use_cases::members::ChangeRoleCommand,
+            application::use_cases::taxonomy::CategoryDto,
+            application::use_cases::taxonomy::ServiceDto,
+            application::use_cases::taxonomy::BusinessCategoryDto,
+            application::use_cases::taxonomy::BusinessServiceDto,
+            application::use_cases::taxonomy::AssignCategoryCommand,
+            application::use_cases::taxonomy::AssignServiceCommand,
             business::UpdateProfileRequest,
             domain::membership::MembershipRole,
         )
@@ -77,11 +94,12 @@ impl Modify for SecurityAddon {
         (name = "Auth", description = "Authentication and session management"),
         (name = "User", description = "User profile operations"),
         (name = "Business", description = "Business aggregate & membership operations"),
+        (name = "Taxonomy", description = "Category & Service taxonomy management"),
     ),
     info(
         title = "Business Discovery Platform API",
-        version = "0.2.0",
-        description = "Production-grade Modular Monolith API with PostGIS & Membership-based Ownership"
+        version = "0.3.0",
+        description = "Production-grade Modular Monolith API with PostGIS, Membership Ownership & Taxonomy Classification"
     )
 )]
 pub struct ApiDoc;
