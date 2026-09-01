@@ -4,7 +4,7 @@ use utoipa::{
 };
 
 use crate::errors;
-use crate::routes::{auth, business, health, moderation, profile, recommendation, search, taxonomy, user};
+use crate::routes::{auth, business, health, moderation, monetization, profile, recommendation, search, taxonomy, user};
 
 struct SecurityAddon;
 
@@ -76,6 +76,11 @@ impl Modify for SecurityAddon {
         search::autocomplete_suggestions,
         recommendation::get_recommendations,
         recommendation::get_similar_businesses,
+        monetization::get_plans,
+        monetization::subscribe_business_endpoint,
+        monetization::verify_payment_endpoint,
+        monetization::create_campaign_endpoint,
+        monetization::get_sponsored_ads,
     ),
     components(
         schemas(
@@ -121,6 +126,13 @@ impl Modify for SecurityAddon {
             application::ports::search::SuggestionType,
             application::ports::recommendation::RecommendationItemDto,
             application::ports::recommendation::RecommendationResponseDto,
+            application::ports::monetization::PlanDto,
+            application::ports::monetization::PaymentDto,
+            application::ports::monetization::SponsoredAdDto,
+            application::use_cases::monetization::SubscribeCommand,
+            application::use_cases::monetization::CreateCampaignCommand,
+            domain::monetization::Money,
+            domain::monetization::Currency,
             business::UpdateProfileRequest,
             domain::membership::MembershipRole,
             domain::profile::BusinessHoursInterval,
@@ -144,11 +156,12 @@ impl Modify for SecurityAddon {
         (name = "Moderation", description = "Admin moderation cases, claims & trust verification"),
         (name = "Search", description = "Full text search, geo-discovery & autocomplete"),
         (name = "Recommendation", description = "Personalized & contextual discovery"),
+        (name = "Monetization", description = "Subscription plans, payments, ledger & sponsored ads"),
     ),
     info(
         title = "Business Discovery Platform API",
-        version = "0.7.0",
-        description = "Production-grade Modular Monolith API with Contextual Recommendations & Discovery Engine"
+        version = "0.8.0",
+        description = "Production-grade Modular Monolith API with Monetization, Double-Entry Ledger & Advertising Engine"
     )
 )]
 pub struct ApiDoc;

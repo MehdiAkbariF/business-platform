@@ -4,6 +4,7 @@ pub mod events;
 pub mod location;
 pub mod membership;
 pub mod moderation;
+pub mod monetization;
 pub mod profile;
 pub mod ranking;
 pub mod recommendation;

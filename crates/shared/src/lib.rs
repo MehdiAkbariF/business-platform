@@ -3,393 +3,69 @@ use std::fmt;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct UserId(pub Uuid);
+macro_rules! define_id {
+    ($name:ident) => {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+        #[serde(transparent)]
+        pub struct $name(pub Uuid);
 
-impl UserId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for UserId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for UserId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
+        impl $name {
+            pub fn new() -> Self {
+                Self(Uuid::now_v7())
+            }
+            pub fn from_uuid(uuid: Uuid) -> Self {
+                Self(uuid)
+            }
+        }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct BusinessId(pub Uuid);
+        impl Default for $name {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
 
-impl BusinessId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for BusinessId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for BusinessId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
+        impl fmt::Display for $name {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "{}", self.0)
+            }
+        }
+    };
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct CaseId(pub Uuid);
+// 1. Identity & Auth (Phase 12)
+define_id!(UserId);
+define_id!(SessionId);
+define_id!(TokenFamilyId);
+define_id!(AuditLogId);
 
-impl CaseId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for CaseId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for CaseId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
+// 2. Business & Ownership (Phase 13)
+define_id!(BusinessId);
+define_id!(MembershipId);
+define_id!(LocationId);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct DecisionId(pub Uuid);
+// 3. Taxonomy (Phase 14)
+define_id!(CategoryId);
+define_id!(ServiceId);
+define_id!(AliasId);
 
-impl DecisionId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for DecisionId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for DecisionId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
+// 4. Media & Profile (Phase 15)
+define_id!(MediaId);
+define_id!(AttributeId);
+define_id!(SocialLinkId);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct ClaimId(pub Uuid);
+// 5. Moderation & Trust (Phase 16)
+define_id!(CaseId);
+define_id!(DecisionId);
+define_id!(ClaimId);
+define_id!(ReportId);
 
-impl ClaimId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for ClaimId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for ClaimId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct ReportId(pub Uuid);
-
-impl ReportId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for ReportId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for ReportId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct MediaId(pub Uuid);
-
-impl MediaId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for MediaId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for MediaId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct AttributeId(pub Uuid);
-
-impl AttributeId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for AttributeId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for AttributeId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct SocialLinkId(pub Uuid);
-
-impl SocialLinkId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for SocialLinkId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for SocialLinkId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct CategoryId(pub Uuid);
-
-impl CategoryId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for CategoryId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for CategoryId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct ServiceId(pub Uuid);
-
-impl ServiceId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for ServiceId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for ServiceId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct AliasId(pub Uuid);
-
-impl AliasId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for AliasId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for AliasId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct MembershipId(pub Uuid);
-
-impl MembershipId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for MembershipId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for MembershipId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct LocationId(pub Uuid);
-
-impl LocationId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for LocationId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for LocationId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(transparent)]
-pub struct SessionId(pub Uuid);
-
-impl SessionId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for SessionId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for SessionId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct TokenFamilyId(pub Uuid);
-
-impl TokenFamilyId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-    pub fn from_uuid(uuid: Uuid) -> Self {
-        Self(uuid)
-    }
-}
-impl Default for TokenFamilyId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for TokenFamilyId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct AuditLogId(pub Uuid);
-
-impl AuditLogId {
-    pub fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-}
-impl Default for AuditLogId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl fmt::Display for AuditLogId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
+// 6. Monetization & Ads (Phase 20)
+define_id!(PlanId);
+define_id!(SubscriptionId);
+define_id!(PaymentId);
+define_id!(TransactionId);
+define_id!(CampaignId);
+define_id!(CreativeId);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClientMetadata {

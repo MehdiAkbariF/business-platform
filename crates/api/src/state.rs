@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use application::ports::{
+    monetization::{MonetizationRepository, PaymentProviderPort},
     ranking::RankingEnginePort,
     recommendation::{RecommendationEnginePort, RecommendationRepository},
     repositories::{
@@ -18,6 +19,7 @@ use infrastructure::{
             postgres_business_repo::PostgresBusinessRepository,
             postgres_membership_repo::PostgresMembershipRepository,
             postgres_moderation_repo::PostgresModerationRepository,
+            postgres_monetization_repo::PostgresMonetizationRepository,
             postgres_profile_repo::PostgresProfileRepository,
             postgres_recommendation_repo::PostgresRecommendationRepository,
             postgres_session_repo::PostgresSessionRepository,
@@ -26,6 +28,7 @@ use infrastructure::{
         },
         PostgresDatabase,
     },
+    monetization::mock_provider::MockPaymentProvider,
     ranking::deterministic_engine::DeterministicRankingEngine,
     rate_limiter::redis_limiter::RedisRateLimiter,
     recommendation::modular_engine::ModularRecommendationEngine,
@@ -53,6 +56,8 @@ pub struct AppState {
     pub search_port: Arc<dyn BusinessSearchPort>,
     pub ranking_engine: Arc<dyn RankingEnginePort>,
     pub rec_engine: Arc<dyn RecommendationEnginePort>,
+    pub monetization_repo: Arc<dyn MonetizationRepository>,
+    pub payment_provider: Arc<dyn PaymentProviderPort>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -82,6 +87,8 @@ impl AppState {
         ));
         let ranking_engine = Arc::new(DeterministicRankingEngine::new(config.max_search_radius_km));
         let rec_engine = Arc::new(ModularRecommendationEngine::new(rec_repo.clone()));
+        let monetization_repo = Arc::new(PostgresMonetizationRepository::new(db.pool().clone()));
+        let payment_provider = Arc::new(MockPaymentProvider);
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
@@ -106,6 +113,8 @@ impl AppState {
             search_port,
             ranking_engine,
             rec_engine,
+            monetization_repo,
+            payment_provider,
             password_hasher,
             token_service,
             rate_limiter,

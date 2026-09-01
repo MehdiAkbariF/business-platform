@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::{auth, business, health, moderation, profile, recommendation, search, taxonomy, user},
+    routes::{auth, business, health, moderation, monetization, profile, recommendation, search, taxonomy, user},
     state::AppState,
 };
 
@@ -52,6 +52,11 @@ pub fn build_router(state: AppState) -> Router {
 
     let rec_routes = Router::new()
         .route("/", get(recommendation::get_recommendations));
+
+    let billing_routes = Router::new()
+        .route("/plans", get(monetization::get_plans))
+        .route("/payments/{id}/verify", post(monetization::verify_payment_endpoint))
+        .route("/ads/sponsored", get(monetization::get_sponsored_ads));
 
     let admin_routes = Router::new()
         .route("/moderation/cases", get(moderation::get_cases))
@@ -111,7 +116,9 @@ pub fn build_router(state: AppState) -> Router {
         .route("/{id}/media/{media_id}", delete(profile::delete_media_item))
         .route("/{id}/claim", post(moderation::claim_business_endpoint))
         .route("/{id}/reports", post(moderation::report_business_endpoint))
-        .route("/{id}/similar", get(recommendation::get_similar_businesses));
+        .route("/{id}/similar", get(recommendation::get_similar_businesses))
+        .route("/{id}/subscribe", post(monetization::subscribe_business_endpoint))
+        .route("/{id}/campaigns", post(monetization::create_campaign_endpoint));
 
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))
@@ -120,6 +127,7 @@ pub fn build_router(state: AppState) -> Router {
         .nest("/api/v1/businesses", business_routes)
         .nest("/api/v1/search", search_routes)
         .nest("/api/v1/recommendations", rec_routes)
+        .nest("/api/v1/billing", billing_routes)
         .nest("/api/v1/admin", admin_routes)
         .nest("/api/v1", taxonomy_routes)
         .nest("/api/v1", user_routes)

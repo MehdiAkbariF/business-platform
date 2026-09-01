@@ -1,5 +1,6 @@
 pub mod config;
 pub mod database;
+pub mod monetization;
 pub mod ranking;
 pub mod rate_limiter;
 pub mod recommendation;

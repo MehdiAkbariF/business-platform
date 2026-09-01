@@ -4,6 +4,7 @@ pub mod login;
 pub mod logout;
 pub mod members;
 pub mod moderation;
+pub mod monetization;
 pub mod profile;
 pub mod recommendation;
 pub mod refresh;
