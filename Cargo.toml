@@ -30,9 +30,13 @@ aws-config = "1.5"
 axum = { version = "0.8", features = ["macros"] }
 tower = { version = "0.5", features = ["util", "timeout"] }
 tower-http = { version = "0.6", features = ["trace", "cors", "request-id", "util", "timeout"] }
-utoipa = { version = "5.3", features = ["axum_extras"] }
+utoipa = { version = "5.3", features = ["axum_extras", "chrono", "uuid"] }
 utoipa-swagger-ui = { version = "9.0", features = ["axum"] }
-uuid = { version = "1.12", features = ["v4", "serde"] }
+uuid = { version = "1.12", features = ["v4", "v7", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 config = "0.15"
 dotenvy = "0.15"
+argon2 = { version = "0.5", features = ["std"] }
+jsonwebtoken = "9.3"
+sha2 = "0.10"
+rand = "0.8"

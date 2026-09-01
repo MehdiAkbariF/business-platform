@@ -1,5 +1,5 @@
-use redis::aio::ConnectionManager;
 use application::errors::AppError;
+use redis::aio::ConnectionManager;
 
 #[derive(Clone)]
 pub struct RedisClient {
@@ -15,6 +15,10 @@ impl RedisClient {
             .map_err(|e| AppError::internal(e))?;
 
         Ok(Self { manager })
+    }
+
+    pub fn manager(&self) -> &ConnectionManager {
+        &self.manager
     }
 
     pub async fn check_health(&self) -> Result<(), AppError> {

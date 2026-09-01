@@ -1,3 +1,5 @@
+pub mod repositories;
+
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::time::Duration;
 use crate::config::AppConfig;

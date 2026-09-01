@@ -7,3 +7,5 @@ edition.workspace = true
 shared = { path = "../shared" }
 thiserror.workspace = true
 serde.workspace = true
+chrono.workspace = true
+utoipa.workspace = true

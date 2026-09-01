@@ -16,6 +16,11 @@ pub struct AppConfig {
     pub storage_secret_key: String,
     pub storage_region: String,
     pub cors_allowed_origins: Vec<String>,
+    // Auth fields
+    pub jwt_secret: String,
+    pub access_token_ttl_seconds: i64,
+    pub refresh_token_ttl_seconds: i64,
+    pub auth_rate_limit_per_minute: u32,
 }
 
 impl AppConfig {
@@ -57,6 +62,18 @@ impl AppConfig {
             origins.split(',').map(|s| s.trim().to_string()).collect()
         };
 
+        let jwt_secret = env::var("JWT_SECRET")
+            .unwrap_or_else(|_| "default_insecure_jwt_secret_must_be_changed_in_prod_at_least_32_bytes".to_string());
+        let access_token_ttl_seconds = env::var("ACCESS_TOKEN_TTL_SECONDS")
+            .unwrap_or_else(|_| "900".to_string())
+            .parse::<i64>()?;
+        let refresh_token_ttl_seconds = env::var("REFRESH_TOKEN_TTL_SECONDS")
+            .unwrap_or_else(|_| "2592000".to_string())
+            .parse::<i64>()?;
+        let auth_rate_limit_per_minute = env::var("AUTH_RATE_LIMIT_PER_MINUTE")
+            .unwrap_or_else(|_| "20".to_string())
+            .parse::<u32>()?;
+
         Ok(Self {
             app_env,
             server_host,
@@ -71,6 +88,10 @@ impl AppConfig {
             storage_secret_key,
             storage_region,
             cors_allowed_origins,
+            jwt_secret,
+            access_token_ttl_seconds,
+            refresh_token_ttl_seconds,
+            auth_rate_limit_per_minute,
         })
     }
 }

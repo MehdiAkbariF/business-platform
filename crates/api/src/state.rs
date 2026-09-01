@@ -1,9 +1,22 @@
 use std::sync::Arc;
-use application::ports::storage::ObjectStoragePort;
+use application::ports::{
+    repositories::{AuditRepository, SessionRepository, UserRepository},
+    security::{PasswordHasherPort, RateLimiterPort, TokenServicePort},
+    storage::ObjectStoragePort,
+};
 use infrastructure::{
     config::AppConfig,
-    database::PostgresDatabase,
+    database::{
+        repositories::{
+            postgres_audit_repo::PostgresAuditRepository,
+            postgres_session_repo::PostgresSessionRepository,
+            postgres_user_repo::PostgresUserRepository,
+        },
+        PostgresDatabase,
+    },
+    rate_limiter::redis_limiter::RedisRateLimiter,
     redis::RedisClient,
+    security::{argon2_hasher::Argon2PasswordHasher, jwt_token_service::JwtTokenService},
     storage::S3ObjectStorage,
 };
 
@@ -13,6 +26,12 @@ pub struct AppState {
     pub db: PostgresDatabase,
     pub redis: RedisClient,
     pub storage: Arc<dyn ObjectStoragePort>,
+    pub user_repo: Arc<dyn UserRepository>,
+    pub session_repo: Arc<dyn SessionRepository>,
+    pub audit_repo: Arc<dyn AuditRepository>,
+    pub password_hasher: Arc<dyn PasswordHasherPort>,
+    pub token_service: Arc<dyn TokenServicePort>,
+    pub rate_limiter: Arc<dyn RateLimiterPort>,
 }
 
 impl AppState {
@@ -23,11 +42,27 @@ impl AppState {
             .map_err(|e| anyhow::anyhow!("Failed to connect to Redis: {:?}", e))?;
         let storage = Arc::new(S3ObjectStorage::new(&config).await);
 
+        let user_repo = Arc::new(PostgresUserRepository::new(db.pool().clone()));
+        let session_repo = Arc::new(PostgresSessionRepository::new(db.pool().clone()));
+        let audit_repo = Arc::new(PostgresAuditRepository::new(db.pool().clone()));
+        let password_hasher = Arc::new(Argon2PasswordHasher);
+        let token_service = Arc::new(JwtTokenService::new(
+            config.jwt_secret.clone(),
+            config.access_token_ttl_seconds,
+        ));
+        let rate_limiter = Arc::new(RedisRateLimiter::new(redis.clone()));
+
         Ok(Self {
             config,
             db,
             redis,
             storage,
+            user_repo,
+            session_repo,
+            audit_repo,
+            password_hasher,
+            token_service,
+            rate_limiter,
         })
     }
 }

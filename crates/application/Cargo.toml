@@ -9,4 +9,8 @@ shared = { path = "../shared" }
 thiserror.workspace = true
 anyhow.workspace = true
 async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+utoipa.workspace = true
 bytes = "1.10"

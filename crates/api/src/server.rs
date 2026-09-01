@@ -1,7 +1,7 @@
 use axum::{
     http::StatusCode,
     middleware,
-    routing::get,
+    routing::{get, post},
     Router,
 };
 use std::time::Duration;
@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::health,
+    routes::{auth, health, user},
     state::AppState,
 };
 
@@ -30,14 +30,26 @@ pub fn build_router(state: AppState) -> Router {
         CorsLayer::new()
     };
 
+    let auth_routes = Router::new()
+        .route("/register", post(auth::register))
+        .route("/login", post(auth::login))
+        .route("/refresh", post(auth::refresh))
+        .route("/logout", post(auth::logout))
+        .route("/logout-all", post(auth::logout_all));
+
+    let user_routes = Router::new()
+        .route("/me", get(user::get_me));
+
     let mut router = Router::new()
         .route("/health/live", get(health::liveness))
         .route("/health/ready", get(health::readiness))
+        .nest("/api/v1/auth", auth_routes)
+        .nest("/api/v1", user_routes)
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
                 .layer(middleware::from_fn(trace_request_id))
-             .layer(TimeoutLayer::with_status_code(
+                .layer(TimeoutLayer::with_status_code(
                     StatusCode::REQUEST_TIMEOUT,
                     Duration::from_secs(30),
                 ))
