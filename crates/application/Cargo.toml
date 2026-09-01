@@ -16,3 +16,4 @@ utoipa.workspace = true
 bytes = "1.10"
 image.workspace = true
 url.workspace = true
+uuid.workspace = true

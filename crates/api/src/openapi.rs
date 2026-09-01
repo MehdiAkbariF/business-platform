@@ -4,7 +4,7 @@ use utoipa::{
 };
 
 use crate::errors;
-use crate::routes::{auth, business, health, moderation, profile, taxonomy, user};
+use crate::routes::{auth, business, health, moderation, profile, search, taxonomy, user};
 
 struct SecurityAddon;
 
@@ -72,6 +72,8 @@ impl Modify for SecurityAddon {
         moderation::restore_business_endpoint,
         moderation::claim_business_endpoint,
         moderation::report_business_endpoint,
+        search::search_businesses,
+        search::autocomplete_suggestions,
     ),
     components(
         schemas(
@@ -111,6 +113,10 @@ impl Modify for SecurityAddon {
             application::use_cases::moderation::DecisionCommand,
             application::use_cases::moderation::SubmitClaimCommand,
             application::use_cases::moderation::CreateReportCommand,
+            application::ports::search::SearchResultItemDto,
+            application::ports::search::SearchResponseDto,
+            application::ports::search::SuggestionItemDto,
+            application::ports::search::SuggestionType,
             business::UpdateProfileRequest,
             domain::membership::MembershipRole,
             domain::profile::BusinessHoursInterval,
@@ -130,11 +136,12 @@ impl Modify for SecurityAddon {
         (name = "Taxonomy", description = "Category & Service taxonomy management"),
         (name = "Profile", description = "Structured profile, media, hours, and attributes"),
         (name = "Moderation", description = "Admin moderation cases, claims & trust verification"),
+        (name = "Search", description = "Full text search, geo-discovery & autocomplete"),
     ),
     info(
         title = "Business Discovery Platform API",
-        version = "0.5.0",
-        description = "Production-grade Modular Monolith API with Moderation Engine, Verification, Claims & Trust Signals"
+        version = "0.6.0",
+        description = "Production-grade Modular Monolith API with Text Search, PostGIS Geo-queries & Autocomplete"
     )
 )]
 pub struct ApiDoc;

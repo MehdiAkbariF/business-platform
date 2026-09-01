@@ -17,7 +17,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     middleware::request_id::trace_request_id,
     openapi::ApiDoc,
-    routes::{auth, business, health, moderation, profile, taxonomy, user},
+    routes::{auth, business, health, moderation, profile, search, taxonomy, user},
     state::AppState,
 };
 
@@ -45,6 +45,10 @@ pub fn build_router(state: AppState) -> Router {
         .route("/categories/{slug}", get(taxonomy::get_category))
         .route("/services", get(taxonomy::get_services))
         .route("/services/{slug}", get(taxonomy::get_service));
+
+    let search_routes = Router::new()
+        .route("/", get(search::search_businesses))
+        .route("/suggestions", get(search::autocomplete_suggestions));
 
     let admin_routes = Router::new()
         .route("/moderation/cases", get(moderation::get_cases))
@@ -110,6 +114,7 @@ pub fn build_router(state: AppState) -> Router {
         .route("/health/ready", get(health::readiness))
         .nest("/api/v1/auth", auth_routes)
         .nest("/api/v1/businesses", business_routes)
+        .nest("/api/v1/search", search_routes)
         .nest("/api/v1/admin", admin_routes)
         .nest("/api/v1", taxonomy_routes)
         .nest("/api/v1", user_routes)

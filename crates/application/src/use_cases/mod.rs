@@ -7,4 +7,5 @@ pub mod moderation;
 pub mod profile;
 pub mod refresh;
 pub mod register;
+pub mod search;
 pub mod taxonomy;

@@ -4,6 +4,7 @@ use application::ports::{
         AuditRepository, BusinessRepository, MembershipRepository, ModerationRepository, ProfileRepository,
         SessionRepository, TaxonomyRepository, UserRepository,
     },
+    search::BusinessSearchPort,
     security::{PasswordHasherPort, RateLimiterPort, TokenServicePort},
     storage::ObjectStoragePort,
 };
@@ -24,6 +25,7 @@ use infrastructure::{
     },
     rate_limiter::redis_limiter::RedisRateLimiter,
     redis::RedisClient,
+    search::postgres_search::PostgresBusinessSearch,
     security::{argon2_hasher::Argon2PasswordHasher, jwt_token_service::JwtTokenService},
     storage::S3ObjectStorage,
 };
@@ -42,6 +44,7 @@ pub struct AppState {
     pub taxonomy_repo: Arc<dyn TaxonomyRepository>,
     pub profile_repo: Arc<dyn ProfileRepository>,
     pub moderation_repo: Arc<dyn ModerationRepository>,
+    pub search_port: Arc<dyn BusinessSearchPort>,
     pub password_hasher: Arc<dyn PasswordHasherPort>,
     pub token_service: Arc<dyn TokenServicePort>,
     pub rate_limiter: Arc<dyn RateLimiterPort>,
@@ -63,6 +66,11 @@ impl AppState {
         let taxonomy_repo = Arc::new(PostgresTaxonomyRepository::new(db.pool().clone()));
         let profile_repo = Arc::new(PostgresProfileRepository::new(db.pool().clone()));
         let moderation_repo = Arc::new(PostgresModerationRepository::new(db.pool().clone()));
+        let search_port = Arc::new(PostgresBusinessSearch::new(
+            db.pool().clone(),
+            config.storage_endpoint.clone(),
+            config.storage_bucket.clone(),
+        ));
         let password_hasher = Arc::new(Argon2PasswordHasher);
         let token_service = Arc::new(JwtTokenService::new(
             config.jwt_secret.clone(),
@@ -83,6 +91,7 @@ impl AppState {
             taxonomy_repo,
             profile_repo,
             moderation_repo,
+            search_port,
             password_hasher,
             token_service,
             rate_limiter,
